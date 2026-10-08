@@ -1,0 +1,800 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Портал JAMO Textile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: top bar with role switch, tab row, one working area; orders open in a side drawer. Stitch-line (dashed thread) motif for dividers and the order timeline. */
+:root{
+  --bg:#f1f2f6;--surface:#ffffff;--surface2:#f6f7fb;--ink:#141a2e;--muted:#5b627a;--line:#dcdfe9;
+  --accent:#2b4a9e;--accent-ink:#ffffff;--accent-soft:#e4eaf9;--thread:#d99a12;
+  --ok:#1c7a52;--ok-soft:#dff3e8;--warn:#8f5600;--warn-soft:#fbefd5;--bad:#b3262e;--bad-soft:#fbe3e4;
+  --shadow:0 1px 2px rgba(20,26,46,.06),0 8px 24px rgba(20,26,46,.07);
+  --f-display:'Unbounded','Onest',system-ui,sans-serif;--f-body:'Onest',system-ui,-apple-system,'Segoe UI',sans-serif;--f-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1220;--surface:#171c2f;--surface2:#1d2338;--ink:#e8ebf5;--muted:#9aa2bb;--line:#2b3250;
+  --accent:#86a2f2;--accent-ink:#0e1220;--accent-soft:#232d52;--thread:#f0b53a;
+  --ok:#59c997;--ok-soft:#173a2c;--warn:#f0b53a;--warn-soft:#3b2f12;--bad:#ff8b92;--bad-soft:#40181c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1220;--surface:#171c2f;--surface2:#1d2338;--ink:#e8ebf5;--muted:#9aa2bb;--line:#2b3250;
+  --accent:#86a2f2;--accent-ink:#0e1220;--accent-soft:#232d52;--thread:#f0b53a;
+  --ok:#59c997;--ok-soft:#173a2c;--warn:#f0b53a;--warn-soft:#3b2f12;--bad:#ff8b92;--bad-soft:#40181c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3);color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5;padding-inline:16px;padding-block:0 48px}
+h1,h2,h3,h4{margin:0;text-wrap:balance;line-height:1.2}
+h1{font-family:var(--f-display);font-size:22px;font-weight:700;letter-spacing:-.01em}
+h2{font-family:var(--f-display);font-size:16px;font-weight:500}
+h3{font-size:15px;font-weight:650}
+h4{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+p{margin:0}
+.wrap{max-width:1200px;margin-inline:auto}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}.small{font-size:12px}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);padding-block:12px 0;border-bottom:2px dashed var(--thread)}
+.top-row{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding-bottom:10px}
+.brand{display:flex;align-items:baseline;gap:8px}
+.brand b{font-family:var(--f-display);font-size:20px;letter-spacing:.02em}
+.brand span{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:8px;cursor:pointer;font-weight:550;color:var(--muted)}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin}
+.tabs button{border:0;background:none;padding:10px 14px;cursor:pointer;font-weight:550;color:var(--muted);white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+main{padding-block:20px}
+/* controls */
+.btn{border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:9px;cursor:pointer;font-weight:600;display:inline-flex;gap:6px;align-items:center;justify-content:center;text-decoration:none;color:var(--ink)}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn.danger{color:var(--bad)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.link{border:0;background:none;color:var(--accent);cursor:pointer;padding:0;font-weight:600}
+input[type=text],input[type=number],input[type=date],input[type=tel],select,textarea{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-width:0}
+textarea{resize:vertical;min-height:70px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:550;min-width:0}
+label.chk{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}.chip.warn{background:var(--warn-soft);color:var(--warn)}.chip.bad{background:var(--bad-soft);color:var(--bad)}.chip.gray{background:var(--surface2);color:var(--muted);border:1px solid var(--line)}
+/* surfaces */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.card.pop{box-shadow:var(--shadow)}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.g2{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.split{display:grid;gap:20px;grid-template-columns:minmax(0,1fr) 340px;align-items:start}
+@media (max-width:860px){.split{grid-template-columns:minmax(0,1fr)}}
+.sticky{position:sticky;top:calc(env(safe-area-inset-top,0px) + 108px)}
+@media (max-width:860px){.sticky{position:static}}
+.banner{padding:12px 14px;border-radius:10px;background:var(--warn-soft);color:var(--warn);font-weight:550}
+.banner.info{background:var(--accent-soft);color:var(--accent)}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+/* mockup */
+.mock{background:var(--surface2);border:1px solid var(--line);border-radius:12px;aspect-ratio:1/1;max-width:100%;display:block;overflow:hidden}
+.mock svg{width:100%;height:100%;display:block}
+.mock.sm{border-radius:8px}
+.thumb{width:84px;flex:none}
+/* wizard */
+.wsteps{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.wsteps div{flex:1 0 auto;padding:8px 12px;border-radius:8px;background:var(--surface);border:1px solid var(--line);color:var(--muted);font-weight:600;font-size:12px;white-space:nowrap}
+.wsteps div.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.wsteps div.ok{color:var(--ok)}
+.pcard{text-align:left;cursor:pointer;border:2px solid var(--line);background:var(--surface);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.pcard.on{border-color:var(--accent);box-shadow:var(--shadow)}
+.sw{display:flex;flex-wrap:wrap;gap:8px}
+.sw button{width:38px;height:38px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0}
+.sw button.on{outline:3px solid var(--accent);outline-offset:2px}
+.opt{display:flex;flex-wrap:wrap;gap:8px}
+.opt button{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:550}
+.opt button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.logobox{height:96px;border:1px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--surface2);padding:8px}
+.logobox img{max-height:100%;max-width:100%}
+table{width:100%;border-collapse:collapse}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;padding:10px 12px;white-space:nowrap;background:var(--surface2)}
+td{padding:8px 12px;border-top:1px solid var(--line);vertical-align:middle}
+td input,td select{min-width:90px}
+td input[type=number]{min-width:72px}
+.sizes td,.sizes th{padding:6px}
+.sizes input{width:64px;text-align:center;padding:6px 4px}
+.price{display:grid;grid-template-columns:1fr auto;gap:6px 12px}
+.price .tot{font-weight:700;font-size:16px}
+/* timeline */
+.steps{list-style:none;margin:0;padding:6px 0 4px;display:flex;overflow-x:auto;gap:0}
+.steps li{flex:1 0 74px;text-align:center;font-size:11px;color:var(--muted);position:relative;padding-top:20px}
+.steps li::before{content:"";position:absolute;top:6px;left:0;right:0;border-top:2px dashed var(--line)}
+.steps li span{position:absolute;top:0;left:50%;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;background:var(--surface);border:2px solid var(--line)}
+.steps li.done{color:var(--ink)}.steps li.done::before{border-top:2px solid var(--thread)}
+.steps li.done span{background:var(--thread);border-color:var(--thread)}
+.steps li.now{color:var(--accent);font-weight:700}.steps li.now::before{border-top:2px solid var(--thread)}
+.steps li.now span{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.bar{height:8px;border-radius:99px;background:var(--surface2);border:1px solid var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.bar i.warn{background:var(--thread)}.bar i.bad{background:var(--bad)}
+/* kanban */
+.kan{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(250px,1fr);gap:12px;overflow-x:auto;padding-bottom:8px;align-items:start}
+.col{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.ocard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:6px;width:100%}
+.ocard:hover{border-color:var(--accent)}
+/* drawer */
+.veil{position:fixed;inset:0;background:rgba(10,14,28,.5);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--bg);z-index:41;overflow-y:auto;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));box-shadow:var(--shadow)}
+.chat{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto}
+.msg{max-width:85%;padding:8px 12px;border-radius:12px;background:var(--surface2);border:1px solid var(--line)}
+.msg.me{align-self:flex-end;background:var(--accent-soft);border-color:transparent}
+.msg b{font-size:11px;display:block;color:var(--muted)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:60;max-width:calc(100% - 32px);font-weight:550}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bars div.l{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center}
+.auth{max-width:440px;margin:6vh auto 0}
+.note{font-size:12px;color:var(--muted);border-left:3px solid var(--thread);padding-left:10px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<div id="app" class="wrap"></div>
+<div id="toast" class="toast" hidden></div>
+<script>
+'use strict';
+var KEY='jamo-portal-v1';
+var TODAY='2026-10-06';
+var SIZES=['S','M','L','XL','XXL'];
+var STAGES=[['mockup','Макет'],['quote','КП'],['payment','Оплата'],['cutting','Раскрой'],['sewing','Пошив'],['branding','Нанесение'],['qc','ОТК'],['packing','Упаковка'],['delivery','Доставка'],['done','Закрыт']];
+var PLACES={left:'Грудь слева',center:'Грудь по центру',back:'Спина',sleeve:'Рукав',front:'Фронт',side:'Бок'};
+var INDS={hotel:'Гостиницы и рестораны',retail:'Ритейл',industry:'Производство и логистика',service:'Сервис и медицина'};
+var MGR=['Азиза Каримова','Тимур Рашидов'];
+var S=null;
+
+var $=function(s){return document.querySelector(s)};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var fmt=function(n){return Math.round(n).toLocaleString('ru-RU')+' сум'};
+var fd=function(s){return s?new Date(s).toLocaleDateString('ru-RU',{timeZone:'UTC'}):'—'};
+var prod=function(id){return S.products.find(function(p){return p.id===id})};
+var colr=function(id){return S.colors.find(function(c){return c.id===id})||S.colors[0]};
+var cli=function(id){return S.clients.find(function(c){return c.id===id})};
+var ord=function(id){return S.orders.find(function(o){return o.id===id})};
+var stageName=function(k){var s=STAGES.find(function(x){return x[0]===k});return s?s[1]:k};
+var oq=function(o){return o.items.reduce(function(a,i){return a+i.qty},0)};
+var sumObj=function(o){return Object.keys(o||{}).reduce(function(a,k){return a+(+o[k]||0)},0)};
+
+function setPath(obj,path,val){var k=path.split('.');var o=obj;for(var i=0;i<k.length-1;i++){if(o[k[i]]==null)o[k[i]]={};o=o[k[i]]}o[k[k.length-1]]=val}
+function toast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(function(){t.hidden=true},2600)}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+function makeLogo(ini,col,w1,w2){
+  var svg="<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100'><circle cx='50' cy='50' r='44' fill='"+col+"'/><text x='50' y='63' font-family='Arial,sans-serif' font-weight='700' font-size='38' text-anchor='middle' fill='#fff'>"+ini+"</text><text x='102' y='46' font-family='Arial,sans-serif' font-weight='700' font-size='21' fill='"+col+"'>"+w1+"</text><text x='102' y='68' font-family='Arial,sans-serif' font-size='15' fill='"+col+"'>"+w2+"</text></svg>";
+  return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg);
+}
+
+/* ---------- pricing ---------- */
+function discPct(q){var p=0;S.settings.tiers.forEach(function(t){if(q>=t.from)p=Math.max(p,+t.pct)});return p}
+function priceItem(it,qtyForTier){
+  var pr=prod(it.p),m=S.settings.methods[it.method],q=it.qty,d=discPct(qtyForTier==null?q:qtyForTier);
+  var unit=Math.round(pr.base*(1-d/100))+m.fee;
+  return {unit:unit,d:d,setup:q?m.setup:0,sum:unit*q+(q?m.setup:0),fee:m.fee};
+}
+function calcNet(o){return o.items.reduce(function(a,i){return a+priceItem(i).sum},0)}
+function gross(net){return net*(1+S.settings.vat/100)}
+
+/* ---------- garment mockup ---------- */
+var SH={
+ tee:{dy:0,sl:[258,100],parts:[
+  ['main','M104 42 L66 58 L22 108 L54 134 L80 112 L80 266 L220 266 L220 112 L246 134 L278 108 L234 58 L196 42 Q150 62 104 42Z'],
+  ['dark','M104 42 Q150 84 196 42 Q150 62 104 42Z','f'],['dark','M104 42 Q150 56 196 42 Q150 50 104 42Z','b'],
+  ['line','M80 256 L220 256'],['line','M30 100 L58 128'],['line','M270 100 L242 128']]},
+ hoodie:{dy:8,sl:[256,150],parts:[
+  ['main','M102 56 L56 80 L22 222 L58 230 L82 136 L82 272 L218 272 L218 136 L242 230 L278 222 L244 80 L198 56 Q150 90 102 56Z'],
+  ['main','M100 58 Q96 6 150 6 Q204 6 200 58 Q150 100 100 58Z','f'],['main','M104 56 Q150 24 196 56 Q150 100 104 56Z','b'],
+  ['dark','M118 50 Q150 84 182 50 Q150 30 118 50Z','f'],
+  ['line','M108 216 L192 216 L204 252 L96 252Z','f'],['line','M140 80 L138 120'],['line','M160 80 L162 120'],['line','M82 258 L218 258']]},
+ sweat:{dy:4,sl:[254,138],parts:[
+  ['main','M104 46 L58 70 L26 218 L62 226 L84 130 L84 266 L216 266 L216 130 L238 226 L274 218 L242 70 L196 46 Q150 70 104 46Z'],
+  ['dark','M104 46 Q150 90 196 46 Q150 66 104 46Z','f'],['dark','M104 46 Q150 62 196 46 Q150 54 104 46Z','b'],
+  ['dark','M84 250 L216 250 L216 266 L84 266Z'],['dark','M26 218 L62 226 L58 244 L22 236Z'],['dark','M274 218 L238 226 L242 244 L278 236Z']]},
+ vest:{dy:4,sl:null,parts:[
+  ['main','M104 44 L72 60 L66 124 L80 270 L220 270 L234 124 L228 60 L196 44 Q150 96 104 44Z'],
+  ['line','M150 74 L150 270','f'],['refl','M76 196 L224 196 L224 210 L76 210Z'],['refl','M70 148 L230 148 L230 162 L70 162Z']]},
+ work:{dy:6,sl:[256,150],parts:[
+  ['main','M100 46 L54 68 L22 232 L60 240 L82 140 L82 276 L218 276 L218 140 L240 240 L278 232 L246 68 L200 46 Q150 70 100 46Z'],
+  ['dark','M100 46 L128 40 L150 72 L172 40 L200 46 Q150 76 100 46Z','f'],
+  ['line','M150 74 L150 276','f'],['line','M96 190 L136 190 L136 226 L96 226Z','f'],['line','M164 190 L204 190 L204 226 L164 226Z','f'],
+  ['refl','M82 238 L218 238 L218 252 L82 252Z'],['refl','M30 196 L66 204 L64 216 L28 208Z'],['refl','M270 196 L234 204 L236 216 L272 208Z']]},
+ cap:{dy:0,sl:null,parts:[
+  ['main','M62 168 C58 92 100 62 150 62 C200 62 242 92 238 168 Z'],
+  ['dark','M48 168 Q150 140 252 168 Q248 214 150 218 Q52 214 48 168Z'],
+  ['line','M150 64 L150 160'],['line','M106 76 Q96 120 100 162'],['line','M194 76 Q204 120 200 162'],['dark','M142 58 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0Z']]}
+};
+var ANCH={left:[188,104],center:[150,120],back:[150,112],sleeve:null,front:[150,114],side:[222,150]};
+var WID={left:46,center:92,back:118,sleeve:30,front:84,side:34};
+var gid=0;
+function lum(hex){var n=parseInt(hex.slice(1),16);return (0.2126*(n>>16)+0.7152*((n>>8)&255)+0.0722*(n&255))/255}
+
+function garment(o){
+  var id='g'+(++gid),sh=SH[o.shape]||SH.tee,hex=o.hex,dark=lum(hex)<0.4,back=o.place==='back',out='',clip='',i;
+  for(i=0;i<sh.parts.length;i++){
+    var p=sh.parts[i],k=p[0],d=p[1],side=p[2];
+    if(side==='f'&&back)continue;if(side==='b'&&!back)continue;
+    if(k==='main'){out+='<path d="'+d+'" fill="'+hex+'"/>';clip+='<path d="'+d+'"/>'}
+    else if(k==='dark')out+='<path d="'+d+'" fill="#000" fill-opacity=".2"/>';
+    else if(k==='refl')out+='<path d="'+d+'" fill="#e6ebef" fill-opacity=".92" stroke="#9aa5ae" stroke-width="1"/>';
+    else out+='<path d="'+d+'" fill="none" stroke="'+(dark?'#fff':'#000')+'" stroke-opacity=".28" stroke-width="1.4" stroke-dasharray="3 3"/>';
+  }
+  var defs='<defs><clipPath id="c'+id+'">'+clip+'</clipPath><linearGradient id="s'+id+'" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".16"/><stop offset=".3" stop-color="#000" stop-opacity="0"/><stop offset=".72" stop-color="#fff" stop-opacity=".05"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient>';
+  defs+='<filter id="n'+id+'" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .6 -.18"/></filter><filter id="b'+id+'"><feGaussianBlur stdDeviation="3.5"/></filter></defs>';
+  var over='<g clip-path="url(#c'+id+')"><rect width="300" height="300" fill="url(#s'+id+')"/>';
+  if(o.real){
+    over+='<rect width="300" height="300" filter="url(#n'+id+')" opacity=".5"/><g filter="url(#b'+id+')" stroke="#000" stroke-opacity=".16" stroke-width="7" fill="none"><path d="M96 150 Q120 190 100 250"/><path d="M204 150 Q180 190 200 250"/><path d="M128 128 Q150 160 172 128"/></g>';
+  }
+  over+='</g>';
+  var shadow='<ellipse cx="150" cy="288" rx="'+(o.shape==='cap'?96:88)+'" ry="7" fill="#000" opacity="'+(o.real?.22:.1)+'" filter="url(#b'+id+')"/>';
+  var logo='';
+  if(o.logo){
+    var w=(WID[o.place]||60)*(o.scale||100)/100,h=w*0.6,a=ANCH[o.place];
+    if(o.place==='sleeve')a=sh.sl||[255,110];
+    if(a){
+      var cx=a[0]+(o.dx||0),cy=a[1]+(o.dy||0)+(o.place==='sleeve'||o.place==='side'?0:sh.dy);
+      if(dark)logo+='<rect x="'+(cx-w/2-4)+'" y="'+(cy-h/2-3)+'" width="'+(w+8)+'" height="'+(h+6)+'" rx="5" fill="#fff" fill-opacity=".96"/>';
+      logo+='<image href="'+o.logo+'" x="'+(cx-w/2)+'" y="'+(cy-h/2)+'" width="'+w+'" height="'+h+'" preserveAspectRatio="xMidYMid meet"/>';
+    }
+  }
+  return '<svg viewBox="0 0 300 300" role="img" aria-label="Макет изделия">'+defs+shadow+out+over+logo+'</svg>';
+}
+function mockHtml(it,cl,cls){
+  var pr=prod(it.p);if(!pr)return '';
+  var c=(cl||{}).logo;
+  return '<div class="mock '+(cls||'')+'">'+garment({shape:pr.shape,hex:colr(it.color).hex,logo:it.logoSrc||c,place:it.place,scale:it.scale,dx:it.dx,dy:it.dy,real:it.real})+'</div>';
+}
+
+/* ---------- reminders ---------- */
+function monthsSince(d){return (new Date(TODAY)-new Date(d))/2629800000}
+function lastByProduct(cid){
+  var m={};
+  S.orders.filter(function(o){return o.clientId===cid&&!o.sample}).forEach(function(o){
+    o.items.forEach(function(it){
+      if(!m[it.p]||m[it.p].date<o.created)m[it.p]={p:it.p,date:o.created,qty:it.qty,item:it,oid:o.id};
+    });
+  });
+  return Object.keys(m).map(function(k){return m[k]});
+}
+function dueList(c){
+  return lastByProduct(c.id).map(function(x){x.months=monthsSince(x.date);return x}).filter(function(x){return x.months>=c.reminder}).sort(function(a,b){return b.months-a.months});
+}
+function logEvt(o,t){o.log=o.log||[];o.log.unshift({t:TODAY,text:t})}
+function dist(q,sized){
+  if(!sized)return {m:{},w:{},one:q};
+  var sm=[.05,.2,.2,.1,.05],sw=[.1,.15,.1,.05,0],m={},w={},u=0;
+  SIZES.forEach(function(s,i){m[s]=Math.floor(q*sm[i]);w[s]=Math.floor(q*sw[i]);u+=m[s]+w[s]});
+  m.M+=q-u;return {m:m,w:w,one:0};
+}
+function mk(p,color,q,place,method,ex){
+  var it={p:p,color:color,qty:q,sizes:dist(q,p!=='cap'),place:place,method:method,scale:100,dx:0,dy:0,real:true};
+  for(var k in (ex||{}))it[k]=ex[k];return it;
+}
+function seed(){
+  var o={v:1,auth:false,authTab:'login',role:'client',clientId:'c1',views:{client:'dash',manager:'funnel',factory:'queue'},oid:null,sel:null,wiz:null,
+  settings:{vat:12,defaultReminder:6,aiQuota:200,aiUsed:46,
+    tiers:[{from:100,pct:5},{from:300,pct:10},{from:1000,pct:15}],
+    methods:{embr:{name:'Вышивка',fee:9000,setup:180000},screen:{name:'Шелкография',fee:4500,setup:120000},dtf:{name:'DTF-печать',fee:6500,setup:60000},heat:{name:'Термотрансфер',fee:3500,setup:40000}}},
+  colors:[{id:'white',name:'Белый',hex:'#f4f4f1'},{id:'black',name:'Чёрный',hex:'#1c1c21'},{id:'navy',name:'Тёмно-синий',hex:'#1f2f5a'},{id:'gray',name:'Серый меланж',hex:'#9aa0a8'},{id:'red',name:'Красный',hex:'#b3262e'},{id:'green',name:'Зелёный',hex:'#2e6b4d'},{id:'khaki',name:'Хаки',hex:'#747a52'},{id:'orange',name:'Сигнальный оранжевый',hex:'#e5671b'}],
+  products:[
+   {id:'tee',name:'Футболка',shape:'tee',base:48000,min:50,lead:7,fabric:'Хлопок 180 г/м²',sized:true,places:['left','center','back','sleeve'],colors:['white','black','navy','gray','red','green']},
+   {id:'cap',name:'Кепка',shape:'cap',base:36000,min:50,lead:10,fabric:'Хлопковый твил',sized:false,places:['front','side'],colors:['navy','black','white','red','khaki']},
+   {id:'hoodie',name:'Худи',shape:'hoodie',base:210000,min:30,lead:12,fabric:'Футер 3-нитка с начёсом',sized:true,places:['left','center','back','sleeve'],colors:['navy','black','gray','green','red']},
+   {id:'sweat',name:'Свитшот',shape:'sweat',base:165000,min:30,lead:12,fabric:'Футер 2-нитка',sized:true,places:['left','center','back','sleeve'],colors:['navy','black','gray','green','white']},
+   {id:'vest',name:'Жилет',shape:'vest',base:140000,min:30,lead:12,fabric:'Софтшелл',sized:true,places:['left','center','back'],colors:['navy','black','orange','khaki']},
+   {id:'work',name:'Спецодежда (куртка)',shape:'work',base:320000,min:20,lead:18,fabric:'Смесовая ткань, СО-полосы',sized:true,places:['left','back','sleeve'],colors:['orange','navy','khaki','gray']}],
+  clients:[
+   {id:'c1',name:'Samarkand Plaza Hotel',ind:'hotel',inn:'305 118 224',contact:'Дилноза Юсупова',phone:'+998 90 123-45-67',status:'approved',reminder:6,discount:0,manager:MGR[0],logo:makeLogo('SP','#1f6f78','SAMARKAND','PLAZA HOTEL'),
+    users:[{name:'Дилноза Юсупова',role:'Закупщик'},{name:'Шерзод Мирзаев',role:'Бухгалтер'},{name:'Малика Исакова',role:'HR'}],addr:['Самарканд, ул. Регистан, 12 (склад отеля)','Ташкент, Мирзо-Улугбекский р-н, пр. Мустакиллик, 40'],ch:{tg:true,sms:true,email:false,push:true}},
+   {id:'c2',name:'Zamin Market',ind:'retail',inn:'302 774 019',contact:'Рустам Алиев',phone:'+998 93 555-10-20',status:'approved',reminder:12,discount:3,manager:MGR[1],logo:makeLogo('ZM','#2f7d3b','ZAMIN','MARKET'),users:[{name:'Рустам Алиев',role:'Закупщик'}],addr:['Ташкент, Чиланзарский р-н, ул. Бунёдкор, 7'],ch:{tg:true,sms:false,email:true,push:false}},
+   {id:'c3',name:'Oltin Vodiy Agro',ind:'industry',inn:'307 221 880',contact:'Бахтиёр Саидов',phone:'+998 97 810-22-33',status:'approved',reminder:6,discount:0,manager:MGR[0],logo:makeLogo('OV','#b36a00','OLTIN VODIY','AGRO'),users:[{name:'Бахтиёр Саидов',role:'Закупщик'}],addr:['Андижан, пром. зона, склад 3'],ch:{tg:true,sms:true,email:false,push:false}},
+   {id:'c4',name:'Tashkent Logistic Group',ind:'industry',inn:'301 990 441',contact:'Зафар Каримов',phone:'+998 71 200-33-44',status:'approved',reminder:3,discount:5,manager:MGR[1],logo:makeLogo('TL','#7a3b8f','TASHKENT','LOGISTIC'),users:[{name:'Зафар Каримов',role:'Закупщик'},{name:'Нигора Ахмедова',role:'HR'}],addr:['Ташкент, Сергелийский р-н, терминал 2'],ch:{tg:true,sms:true,email:true,push:true}},
+   {id:'c5',name:'Bekzod Auto Service',ind:'service',inn:'309 004 118',contact:'Бекзод Орипов',phone:'+998 99 300-70-70',status:'approved',reminder:12,discount:0,manager:MGR[0],logo:makeLogo('BA','#c0392b','BEKZOD','AUTO SERVICE'),users:[{name:'Бекзод Орипов',role:'Закупщик'}],addr:['Ташкент, Яшнабадский р-н, ул. Кундузсой, 30'],ch:{tg:true,sms:false,email:false,push:false}},
+   {id:'c6',name:'Nur Dental Clinic',ind:'service',inn:'310 552 906',contact:'Севара Хасанова',phone:'+998 94 777-12-12',status:'pending',reminder:6,discount:0,manager:'',logo:makeLogo('ND','#2c7fb8','NUR','DENTAL CLINIC'),users:[{name:'Севара Хасанова',role:'Закупщик'}],addr:['Ташкент, Мирабадский р-н, ул. Нукус, 5'],ch:{tg:true,sms:true,email:false,push:false}}],
+  orders:[
+   {id:'O-2041',clientId:'c1',created:'2026-03-14',due:'2026-04-02',stage:'done',paid:true,manager:MGR[0],workshop:'w1',note:'',items:[mk('hoodie','navy',80,'left','embr'),mk('tee','white',40,'center','dtf')],chat:[{from:'JAMO',text:'Заказ доставлен. Спасибо!',t:'2026-04-02'}],log:[{t:'2026-04-02',text:'Заказ закрыт'},{t:'2026-03-14',text:'Заявка создана клиентом'}]},
+   {id:'O-2087',clientId:'c1',created:'2026-09-22',due:'2026-10-15',stage:'sewing',paid:true,manager:MGR[0],workshop:'w2',note:'Козырёк усилить',items:[mk('cap','navy',200,'front','embr')],chat:[{from:'JAMO',text:'Макет утверждён, вышивка оцифрована. Запускаем в раскрой.',t:'2026-09-24'},{from:'client',text:'Отлично, ждём к 15 октября.',t:'2026-09-24'}],log:[{t:'2026-09-30',text:'Этап: Пошив'},{t:'2026-09-25',text:'Передан на фабрику: Цех №2 (Чирчик)'},{t:'2026-09-22',text:'Заявка создана клиентом'}]},
+   {id:'O-2093',clientId:'c2',created:'2026-10-01',due:'2026-10-24',stage:'quote',paid:false,manager:MGR[1],workshop:null,note:'',items:[mk('tee','green',300,'center','dtf')],chat:[],log:[{t:'2026-10-01',text:'Заявка создана клиентом'}]},
+   {id:'O-2095',clientId:'c3',created:'2026-10-03',due:'2026-11-05',stage:'mockup',paid:false,manager:MGR[0],workshop:null,note:'',items:[mk('work','orange',60,'left','embr')],chat:[{from:'client',text:'Нужны светоотражающие полосы на рукавах.',t:'2026-10-03'}],log:[{t:'2026-10-03',text:'Заявка создана клиентом'}]},
+   {id:'O-2079',clientId:'c4',created:'2026-09-10',due:'2026-10-08',stage:'delivery',paid:true,manager:MGR[1],workshop:'w1',note:'',items:[mk('hoodie','gray',150,'back','screen')],chat:[],log:[{t:'2026-10-04',text:'Этап: Доставка'},{t:'2026-09-10',text:'Заявка создана клиентом'}]},
+   {id:'O-2064',clientId:'c5',created:'2026-09-28',due:'2026-10-26',stage:'payment',paid:false,manager:MGR[0],workshop:null,note:'',items:[mk('sweat','black',40,'left','embr')],chat:[],log:[{t:'2026-09-28',text:'Заявка создана клиентом'}]},
+   {id:'O-2101',clientId:'c4',created:'2026-10-05',due:'2026-11-02',stage:'payment',paid:true,manager:MGR[1],workshop:null,note:'',items:[mk('tee','gray',400,'center','dtf')],chat:[],log:[{t:'2026-10-06',text:'Оплата получена'},{t:'2026-10-05',text:'Заявка создана клиентом'}]}],
+  workshops:[{id:'w1',name:'Цех №1 (Ташкент)',cap:6000},{id:'w2',name:'Цех №2 (Чирчик)',cap:4000}],
+  stock:[{id:'s1',name:'Кулирка 180 г/м², тёмно-синий',unit:'кг',qty:420,min:200},{id:'s2',name:'Кулирка 180 г/м², белый',unit:'кг',qty:150,min:150},{id:'s3',name:'Футер 3-нитка, серый меланж',unit:'кг',qty:80,min:150},{id:'s4',name:'Нить вышивальная, тёмно-синий',unit:'катушек',qty:36,min:20},{id:'s5',name:'Светоотражающая лента',unit:'м',qty:900,min:400}],
+  seasons:[{id:'se1',name:'Зима: худи и свитшоты',date:'01.11',on:true},{id:'se2',name:'Жара: футболки и кепки',date:'15.04',on:true},{id:'se3',name:'Навруз: корпоративные подарки',date:'01.03',on:false},{id:'se4',name:'Начало делового года',date:'01.09',on:false}],
+  campaigns:[{id:'k1',title:'Зимняя коллекция: худи и свитшоты',p:'hoodie',color:'navy',seg:'all',msg:'{company}, начинается холодный сезон. Мы подготовили худи с вашим логотипом. Заказ от 30 шт.',ch:['tg','email'],date:'2026-10-02',sent:5,cost:5}]};
+  S=o;o.orders.forEach(function(x){x.net=calcNet(x)});
+  return o;
+}
+function load(){
+  try{var r=localStorage.getItem(KEY);if(r){var o=JSON.parse(r);if(o&&o.v===1){S=o;return o}}}catch(e){}
+  return seed();
+}
+var NAV={
+ client:[['dash','Главная'],['new','Новый заказ'],['orders','Заказы'],['company','Компания']],
+ manager:[['funnel','Воронка заказов'],['clients','Клиенты'],['catalog','Каталог и цены'],['campaigns','Рассылки'],['analytics','Аналитика']],
+ factory:[['queue','Очередь цеха'],['stock','Склад материалов']]};
+var ROLES=[['client','Клиент'],['manager','Менеджер JAMO'],['factory','Фабрика']];
+var cp=function(id,f){return 'clients.'+S.clients.findIndex(function(c){return c.id===id})+'.'+f};
+var op=function(id,f){return 'orders.'+S.orders.findIndex(function(o){return o.id===id})+'.'+f};
+function opts(list,val){return list.map(function(x){return '<option value="'+esc(x[0])+'"'+(String(x[0])===String(val)?' selected':'')+'>'+esc(x[1])+'</option>'}).join('')}
+function stageChip(o){var k=o.stage,c=k==='done'?'ok':(k==='quote'||k==='payment'||k==='mockup')?'warn':'';return '<span class="chip '+c+'">'+stageName(k)+'</span>'}
+function itemsText(o){return o.items.map(function(i){return prod(i.p).name+' ×'+i.qty}).join(', ')}
+function stepper(o){
+  var i=STAGES.findIndex(function(s){return s[0]===o.stage});
+  return '<ol class="steps">'+STAGES.map(function(s,k){return '<li class="'+(k<i?'done':k===i?'now':'')+'"><span></span>'+s[1]+'</li>'}).join('')+'</ol>';
+}
+
+function render(keep){
+  var y=window.scrollY;
+  $('#app').innerHTML=S.auth?shell():authView();
+  save();
+  window.scrollTo(0,keep===false?0:y);
+}
+function shell(){
+  var nav=NAV[S.role],v=S.views[S.role],c=cli(S.clientId);
+  var h='<header class="top"><div class="top-row"><div class="brand"><b>JAMO</b><span>Textile Produce</span></div>';
+  h+='<div class="row"><div class="seg" role="group" aria-label="Режим демо">'+ROLES.map(function(r){return '<button data-a="role" data-r="'+r[0]+'" class="'+(S.role===r[0]?'on':'')+'">'+r[1]+'</button>'}).join('')+'</div>';
+  h+='<button class="btn sm" data-a="logout">Выйти</button></div></div>';
+  h+='<nav class="tabs">'+nav.map(function(n){return '<button data-a="nav" data-v="'+n[0]+'" class="'+(v===n[0]||(v==='order'&&n[0]==='orders')?'on':'')+'">'+n[1]+'</button>'}).join('')+'</nav></header><main>';
+  if(S.role==='client')h+=clientView(v,c);else if(S.role==='manager')h+=managerView(v);else h+=factoryView(v);
+  h+='</main>';
+  if(S.sel)h+=drawer(ord(S.sel));
+  return h;
+}
+
+/* ---------- auth ---------- */
+function authView(){
+  var reg=S.authTab==='reg';
+  var h='<div class="auth stack"><div class="brand"><b style="font-size:26px">JAMO</b><span>Textile Produce</span></div><div><h1>Корпоративная одежда для вашей команды</h1><p class="muted" style="margin-top:8px">Загрузите логотип, посмотрите макет изделия, закажите тираж и следите за пошивом.</p></div>';
+  h+='<div class="seg"><button data-a="authtab" data-t="login" class="'+(!reg?'on':'')+'">Вход</button><button data-a="authtab" data-t="reg" class="'+(reg?'on':'')+'">Новая компания</button></div><div class="card pop stack">';
+  if(!reg){
+    h+='<label class="f">Телефон<input type="tel" id="a-phone" value="+998 90 123-45-67"></label><label class="f">Код из SMS или Telegram<input type="text" id="a-code" value="1234"></label><button class="btn primary" data-a="login">Войти</button><p class="small muted">Демо: вход выполнится как Samarkand Plaza Hotel.</p>';
+  }else{
+    h+='<label class="f">Название компании<input type="text" id="r-name" placeholder="ООО «Название»"></label><label class="f">ИНН<input type="text" id="r-inn"></label><label class="f">Контактное лицо<input type="text" id="r-contact"></label><label class="f">Телефон<input type="tel" id="r-phone" value="+998 "></label><label class="f">Отрасль<select id="r-ind">'+opts(Object.keys(INDS).map(function(k){return [k,INDS[k]]}),'hotel')+'</select></label><button class="btn primary" data-a="register">Зарегистрировать компанию</button><p class="small muted">Менеджер JAMO подтвердит компанию, после этого заявки уходят в работу.</p>';
+  }
+  h+='</div><div class="row small muted">Для команды JAMO: <button class="link" data-a="demo" data-r="manager">менеджер</button><button class="link" data-a="demo" data-r="factory">фабрика</button></div></div>';
+  return h;
+}
+
+/* ---------- client views ---------- */
+function clientView(v,c){
+  if(v==='dash')return dashView(c);
+  if(v==='new')return wizardView(c);
+  if(v==='orders')return ordersView(c);
+  if(v==='order')return orderDetail(c);
+  return companyView(c);
+}
+function dashView(c){
+  var mine=S.orders.filter(function(o){return o.clientId===c.id});
+  var active=mine.filter(function(o){return o.stage!=='done'}),done=mine.filter(function(o){return o.stage==='done'});
+  var due=dueList(c);
+  var camp=S.campaigns.filter(function(k){return k.seg==='all'||k.seg===c.ind}).slice(-1)[0];
+  var h='<div class="stack"><div class="row between"><div><h1>'+esc(c.name)+'</h1><p class="muted">Менеджер: '+esc(c.manager||'назначается')+'</p></div><button class="btn primary" data-a="nav" data-v="new">Новый заказ</button></div>';
+  if(c.status==='pending')h+='<div class="banner">Компания ждёт подтверждения менеджером JAMO. Макеты доступны, заказ уйдёт в работу после подтверждения.</div>';
+  if(due.length){
+    h+='<section class="card stack"><div class="row between"><h2>Пора обновить форму</h2><span class="small muted">Напоминаем раз в '+c.reminder+' мес. Период меняется в разделе «Компания»</span></div>';
+    due.forEach(function(x){
+      h+='<div class="row" style="flex-wrap:nowrap;align-items:flex-start">'+mockHtml(x.item,c,'sm thumb')+'<div class="stack" style="gap:6px;flex:1"><div><b>'+prod(x.p).name+'</b>, '+colr(x.item.color).name.toLowerCase()+'</div><div class="small muted">Последний заказ '+fd(x.date)+' · '+x.qty+' шт · прошло '+x.months.toFixed(1).replace('.',',')+' мес.</div><div class="row"><button class="btn sm primary" data-a="repeat" data-o="'+x.oid+'" data-p="'+x.p+'">Повторить заказ</button><button class="btn sm" data-a="snooze">Напомнить позже</button></div></div></div>';
+    });
+    h+='</section>';
+  }
+  if(camp){
+    var pr=prod(camp.p),it={p:camp.p,color:camp.color,place:pr.places[0],scale:100,dx:0,dy:0,real:true};
+    h+='<section class="card row" style="flex-wrap:nowrap;align-items:flex-start"><div class="thumb" style="width:120px">'+mockHtml(it,c,'sm')+'</div><div class="stack" style="gap:8px;flex:1;min-width:0"><span class="chip warn" style="align-self:flex-start">Новинка сезона · '+fd(camp.date)+'</span><h3>'+esc(camp.title)+'</h3><p class="muted">'+esc(camp.msg.replace('{company}',c.name))+'</p><div><button class="btn sm primary" data-a="newprod" data-p="'+camp.p+'">Заказать с моим логотипом</button></div></div></section>';
+  }
+  h+='<section class="stack"><h2>Заказы в работе</h2>';
+  if(!active.length)h+='<div class="empty">Активных заказов нет. Начните с нового макета.</div>';
+  active.forEach(function(o){h+=orderRow(o)});
+  h+='</section>';
+  if(done.length){h+='<section class="stack"><h2>Прошлые заказы</h2>';done.forEach(function(o){h+=orderRow(o,true)});h+='</section>'}
+  return h+'</div>';
+}
+function orderRow(o,rep){
+  var i=STAGES.findIndex(function(s){return s[0]===o.stage}),c=cli(o.clientId);
+  return '<div class="card row" style="flex-wrap:nowrap;align-items:flex-start">'+mockHtml(o.items[0],c,'sm thumb')+'<div class="stack" style="gap:6px;flex:1;min-width:0"><div class="row between"><button class="link mono" data-a="open" data-o="'+o.id+'">'+o.id+'</button>'+stageChip(o)+'</div><div>'+esc(itemsText(o))+'</div><div class="small muted">Создан '+fd(o.created)+' · срок '+fd(o.due)+' · '+fmt(gross(o.net))+'</div>'+(rep?'<div><button class="btn sm" data-a="repeat" data-o="'+o.id+'">Повторить</button></div>':'<div class="bar"><i style="width:'+(i/9*100)+'%"></i></div>')+'</div></div>';
+}
+function ordersView(c){
+  var mine=S.orders.filter(function(o){return o.clientId===c.id}).sort(function(a,b){return b.created<a.created?-1:1});
+  var h='<div class="stack"><h1>Заказы</h1>';
+  if(!mine.length)h+='<div class="empty">Заказов пока нет.</div>';
+  mine.forEach(function(o){h+=orderRow(o,o.stage==='done')});
+  return h+'</div>';
+}
+function priceLines(o){
+  var net=o.net,v=S.settings.vat;
+  return '<div class="price"><span class="muted">Сумма без НДС</span><span class="mono">'+fmt(net)+'</span><span class="muted">НДС '+v+'%</span><span class="mono">'+fmt(net*v/100)+'</span><b>Итого</b><span class="mono tot">'+fmt(gross(net))+'</span></div>';
+}
+function orderDetail(c){
+  var o=ord(S.oid);if(!o)return '<div class="empty">Заказ не найден</div>';
+  var h='<div class="stack"><div class="row between"><div class="row"><button class="btn sm" data-a="nav" data-v="orders">← Все заказы</button><h1 class="mono">'+o.id+'</h1>'+stageChip(o)+(o.sample?'<span class="chip gray">Сначала пробный образец</span>':'')+'</div><button class="btn" data-a="repeat" data-o="'+o.id+'">Повторить заказ</button></div>';
+  h+='<div class="card">'+stepper(o)+'<p class="small muted">Срок: '+fd(o.due)+(o.manager?' · менеджер '+esc(o.manager):'')+'</p></div>';
+  if(o.stage==='quote')h+='<div class="banner info row between"><span>Коммерческое предложение готово. Проверьте и подтвердите.</span><button class="btn primary sm" data-a="confirmq" data-o="'+o.id+'">Подтвердить КП</button></div>';
+  if(o.stage==='payment'&&!o.paid)h+='<div class="banner info row between"><span>Ждём оплату по счёту. Можно оплатить онлайн.</span><span class="row"><button class="btn primary sm" data-a="pay" data-o="'+o.id+'">Оплатить через Payme</button><button class="btn sm" data-a="pay" data-o="'+o.id+'">Click</button></span></div>';
+  if(o.stage==='payment'&&o.paid)h+='<div class="banner info">Оплата получена. Менеджер передаёт заказ на фабрику.</div>';
+  h+='<div class="g2">';
+  o.items.forEach(function(it){
+    var pr=prod(it.p),p=priceItem(it);
+    h+='<div class="card stack">'+mockHtml(it,c)+'<div><b>'+pr.name+'</b> · '+colr(it.color).name+'</div><div class="small muted">'+PLACES[it.place]+' · '+S.settings.methods[it.method].name+' · '+it.qty+' шт · '+fmt(p.unit)+' за шт</div>'+(pr.sized?sizeTable(it):'')+'</div>';
+  });
+  h+='</div><div class="g2"><div class="card stack"><h3>Стоимость</h3>'+priceLines(o)+'</div><div class="card stack"><h3>Документы</h3>';
+  ['Коммерческое предложение','Договор','Счёт на оплату','Акт выполненных работ'].forEach(function(d,k){
+    var ok=k<1||(k<2&&o.stage!=='mockup'&&o.stage!=='quote')||(k<3&&o.paid)||(k===3&&o.stage==='done');
+    h+='<div class="row between"><span>'+d+'</span>'+(ok?'<button class="btn sm" data-a="doc">Скачать</button>':'<span class="chip gray">позже</span>')+'</div>';
+  });
+  h+='<p class="small muted">Электронный документооборот (Didox, Faktura.uz) подключается на этапе 3.</p></div></div>';
+  h+=chatBox(o,'client');
+  return h+'</div>';
+}
+function sizeTable(it){
+  if(it.sizes&&it.sizes.link)return '<p class="small muted">Размеры соберём по ссылке от сотрудников.</p>';
+  var m=it.sizes.m||{},w=it.sizes.w||{};
+  return '<div style="overflow-x:auto"><table class="sizes"><tr><th></th>'+SIZES.map(function(s){return '<th>'+s+'</th>'}).join('')+'</tr><tr><td>Муж.</td>'+SIZES.map(function(s){return '<td class="mono">'+(m[s]||0)+'</td>'}).join('')+'</tr><tr><td>Жен.</td>'+SIZES.map(function(s){return '<td class="mono">'+(w[s]||0)+'</td>'}).join('')+'</tr></table></div>';
+}
+function chatBox(o,who){
+  var h='<div class="card stack"><h3>Чат по заказу</h3><div class="chat">';
+  if(!o.chat.length)h+='<p class="small muted">Сообщений пока нет. Напишите менеджеру, он увидит вопрос в заказе.</p>';
+  o.chat.forEach(function(m){var me=(who==='client'&&m.from==='client')||(who!=='client'&&m.from==='JAMO');h+='<div class="msg'+(me?' me':'')+'"><b>'+(m.from==='client'?esc(cli(o.clientId).name):'JAMO')+' · '+fd(m.t)+'</b>'+esc(m.text)+'</div>'});
+  h+='</div><div class="row" style="flex-wrap:nowrap"><input type="text" id="chat-in" placeholder="Сообщение"><button class="btn primary" data-a="send" data-o="'+o.id+'" data-w="'+who+'">Отправить</button></div></div>';
+  return h;
+}
+function companyView(c){
+  var i=S.clients.findIndex(function(x){return x.id===c.id});
+  var h='<div class="stack"><h1>Компания</h1><div class="g2"><div class="card stack"><h3>Реквизиты</h3>';
+  [['name','Название'],['inn','ИНН'],['contact','Контактное лицо'],['phone','Телефон']].forEach(function(f){h+='<label class="f">'+f[1]+'<input type="text" data-edit="clients.'+i+'.'+f[0]+'" value="'+esc(c[f[0]])+'"></label>'});
+  h+='<label class="f">Отрасль<select data-edit="clients.'+i+'.ind">'+opts(Object.keys(INDS).map(function(k){return [k,INDS[k]]}),c.ind)+'</select></label></div>';
+  h+='<div class="card stack"><h3>Логотип компании</h3><div class="logobox"><img src="'+c.logo+'" alt="Логотип"></div><label class="btn" style="cursor:pointer">Загрузить логотип<input type="file" accept="image/*,.svg,.ai,.pdf" data-file="co" hidden></label><p class="note">Для вышивки нужен вектор (SVG, AI, PDF). PNG годится для макета, менеджер запросит вектор перед запуском.</p></div></div>';
+  h+='<div class="g2"><div class="card stack"><h3>Напоминания о заказе</h3><label class="f">Напоминать, если позицию не заказывали больше<select data-edit="clients.'+i+'.reminder" data-t="n">'+opts([[3,'3 месяцев'],[6,'6 месяцев'],[9,'9 месяцев'],[12,'12 месяцев']],c.reminder)+'</select></label><h4>Каналы</h4>';
+  [['tg','Telegram-бот'],['sms','SMS'],['email','Email'],['push','Push']].forEach(function(k){h+='<label class="chk"><input type="checkbox" data-edit="clients.'+i+'.ch.'+k[0]+'" '+(c.ch[k[0]]?'checked':'')+'> '+k[1]+'</label>'});
+  h+='</div><div class="card stack"><h3>Адреса доставки</h3>';
+  c.addr.forEach(function(a,k){h+='<div class="row" style="flex-wrap:nowrap"><input type="text" data-edit="clients.'+i+'.addr.'+k+'" value="'+esc(a)+'"><button class="btn sm danger" data-a="deladdr" data-k="'+k+'">Удалить</button></div>'});
+  h+='<button class="btn sm" data-a="addaddr">Добавить адрес</button></div></div>';
+  h+='<div class="card stack"><h3>Сотрудники с доступом</h3><div class="tw"><table><tr><th>Имя</th><th>Роль</th><th></th></tr>';
+  c.users.forEach(function(u,k){h+='<tr><td><input type="text" data-edit="clients.'+i+'.users.'+k+'.name" value="'+esc(u.name)+'"></td><td><select data-edit="clients.'+i+'.users.'+k+'.role">'+opts(['Закупщик','Бухгалтер','HR','Руководитель'].map(function(r){return [r,r]}),u.role)+'</select></td><td><button class="btn sm danger" data-a="deluser" data-k="'+k+'">Убрать</button></td></tr>'});
+  h+='</table></div><div><button class="btn sm" data-a="adduser">Пригласить сотрудника</button></div></div></div>';
+  return h;
+}
+var WSTEPS=['Изделие','Логотип','Цвет и макет','Размеры','Заявка'];
+function newWiz(pid,c){
+  var p=prod(pid||'tee');
+  return {step:pid?1:0,p:p.id,logo:null,logoName:'',place:p.places[0],method:'embr',scale:100,dx:0,dy:0,color:p.colors[0],real:true,
+    m:{S:0,M:0,L:0,XL:0,XXL:0},w:{S:0,M:0,L:0,XL:0,XXL:0},one:0,link:false,est:100,sample:false,addr:c.addr[0]||'',due:'2026-11-05',comment:'',gen:false,variants:[]};
+}
+function wizFromItem(it,c){
+  var w=newWiz(it.p,c);w.step=3;w.color=it.color;w.place=it.place;w.method=it.method;w.scale=it.scale||100;w.dx=it.dx||0;w.dy=it.dy||0;
+  w.m=Object.assign({S:0,M:0,L:0,XL:0,XXL:0},(it.sizes&&it.sizes.m)||{});w.w=Object.assign({S:0,M:0,L:0,XL:0,XXL:0},(it.sizes&&it.sizes.w)||{});w.one=(it.sizes&&it.sizes.one)||it.qty;
+  return w;
+}
+function wizQty(w){var p=prod(w.p);if(w.link)return +w.est||0;return p.sized?sumObj(w.m)+sumObj(w.w):(+w.one||0)}
+function wizItem(w,c){
+  return {p:w.p,color:w.color,qty:wizQty(w),sizes:{m:Object.assign({},w.m),w:Object.assign({},w.w),one:+w.one||0,link:w.link},place:w.place,method:w.method,scale:+w.scale,dx:+w.dx,dy:+w.dy,real:w.real,logoSrc:w.logo||null};
+}
+function wizMock(){
+  var w=S.wiz,c=cli(S.clientId),it=wizItem(w,c);
+  return mockHtml(it,c);
+}
+function priceBoxHtml(){
+  var w=S.wiz,c=cli(S.clientId),it=wizItem(w,c),pr=prod(w.p),q=it.qty,p=priceItem(it),m=S.settings.methods[w.method];
+  var net=p.sum,vat=net*S.settings.vat/100,h='<div class="price"><span class="muted">Количество</span><span class="mono">'+q+' шт</span><span class="muted">Цена за шт</span><span class="mono">'+fmt(p.unit)+'</span>';
+  if(p.d)h+='<span class="muted">Скидка за тираж</span><span class="mono">−'+p.d+'%</span>';
+  h+='<span class="muted">Подготовка ('+m.name.toLowerCase()+')</span><span class="mono">'+fmt(p.setup)+'</span><span class="muted">Без НДС</span><span class="mono">'+fmt(net)+'</span><span class="muted">НДС '+S.settings.vat+'%</span><span class="mono">'+fmt(vat)+'</span><b>Итого</b><span class="mono tot">'+fmt(net+vat)+'</span></div>';
+  var next=S.settings.tiers.slice().sort(function(a,b){return a.from-b.from}).find(function(t){return t.from>q});
+  if(q&&q<pr.min)h+='<p class="small" style="color:var(--bad);margin-top:8px">Минимальный тираж для этой позиции: '+pr.min+' шт.</p>';
+  else if(next)h+='<p class="small muted" style="margin-top:8px">Ещё '+(next.from-q)+' шт до скидки '+next.pct+'%.</p>';
+  return h;
+}
+function refreshLive(){
+  if(!S.wiz)return;
+  var a=$('#mockBox'),b=$('#priceBox'),t=$('#qtyTot');
+  if(a)a.innerHTML=wizMock();if(b)b.innerHTML=priceBoxHtml();if(t)t.textContent=wizQty(S.wiz);
+}
+function wizardView(c){
+  if(!S.wiz)S.wiz=newWiz(null,c);
+  var w=S.wiz,pr=prod(w.p);
+  var h='<div class="stack"><div class="row between"><h1>Новый заказ</h1><div class="row"><button class="btn sm" data-a="wiz-reset">Начать заново</button></div></div>';
+  h+='<div class="wsteps">'+WSTEPS.map(function(s,i){return '<div class="'+(i===w.step?'on':i<w.step?'ok':'')+'">'+(i+1)+'. '+s+'</div>'}).join('')+'</div>';
+  h+='<div class="split"><div class="stack">'+['','','','',''].map(function(_,i){return ''}).join('');
+  h+=[wStep0,wStep1,wStep2,wStep3,wStep4][w.step](c,w,pr);
+  var last=w.step===4;
+  h+='<div class="row between"><button class="btn" data-a="wiz-back"'+(w.step===0?' disabled':'')+'>Назад</button>'+(last?'<button class="btn primary" data-a="submit">Отправить заявку</button>':'<button class="btn primary" data-a="wiz-next">Далее</button>')+'</div></div>';
+  h+='<aside class="stack sticky"><div id="mockBox">'+wizMock()+'</div><label class="chk small"><input type="checkbox" data-set="wiz.real" data-live="1" '+(w.real?'checked':'')+'> Реалистичный вид (AI: складки, ткань, свет)</label><div class="card" id="priceBox">'+priceBoxHtml()+'</div><p class="note">Прототип: макет собирается на шаблоне изделия. В рабочей версии логотип накладывается без искажений, а AI добавляет складки и фото на модели.</p></aside></div></div>';
+  return h;
+}
+function wStep0(c,w){
+  var h='<div><h2>Что хотите заказать?</h2><p class="muted">Выберите изделие. Остальное можно поменять на следующих шагах.</p></div><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">';
+  S.products.forEach(function(p){
+    h+='<button class="pcard '+(w.p===p.id?'on':'')+'" data-a="wprod" data-id="'+p.id+'"><div class="mock sm">'+garment({shape:p.shape,hex:colr(p.colors[0]).hex,logo:c.logo,place:p.places[0],scale:100,dx:0,dy:0,real:false})+'</div><b>'+p.name+'</b><span class="small muted">от '+fmt(p.base)+' · от '+p.min+' шт · '+p.lead+' дн.</span></button>';
+  });
+  return h+'</div>';
+}
+function wStep1(c,w,pr){
+  var src=w.logo||c.logo;
+  var h='<div><h2>Логотип и нанесение</h2></div><div class="card stack"><div class="logobox"><img src="'+src+'" alt="Логотип"></div><div class="row"><label class="btn" style="cursor:pointer">Загрузить другой логотип<input type="file" accept="image/*,.svg,.ai,.pdf" data-file="wiz" hidden></label>'+(w.logo?'<button class="btn" data-a="wiz-logo-reset">Логотип компании</button>':'<span class="small muted">Сейчас: логотип из профиля</span>')+'</div>'+(w.logoName?'<p class="small muted">Файл: '+esc(w.logoName)+'</p>':'')+'<p class="note">Для вышивки и шелкографии нужен вектор (SVG, AI, PDF). PNG и JPG подходят для макета.</p></div>';
+  h+='<div class="card stack"><h4>Место нанесения</h4><div class="opt">'+pr.places.map(function(k){return '<button data-a="wplace" data-id="'+k+'" class="'+(w.place===k?'on':'')+'">'+PLACES[k]+'</button>'}).join('')+'</div>';
+  h+='<label class="f">Способ<select data-set="wiz.method">'+opts(Object.keys(S.settings.methods).map(function(k){return [k,S.settings.methods[k].name+' (+'+fmt(S.settings.methods[k].fee)+'/шт)']}),w.method)+'</select></label>';
+  h+='<label class="f">Размер логотипа: <span class="mono">'+w.scale+'%</span><input type="range" min="40" max="160" step="5" data-set="wiz.scale" data-t="n" data-live="1" data-out="scale" value="'+w.scale+'"></label>';
+  h+='<div class="g2"><label class="f">Сдвиг по горизонтали<input type="range" min="-30" max="30" data-set="wiz.dx" data-t="n" data-live="1" value="'+w.dx+'"></label><label class="f">Сдвиг по вертикали<input type="range" min="-30" max="30" data-set="wiz.dy" data-t="n" data-live="1" value="'+w.dy+'"></label></div>';
+  if(lum(colr(w.color).hex)<0.4)h+='<p class="note">Ткань тёмная: логотип показан на светлой подложке. Можно заказать светлую версию логотипа, менеджер уточнит.</p>';
+  return h+'</div>';
+}
+function wStep2(c,w,pr){
+  var h='<div><h2>Цвет и макет</h2></div><div class="card stack"><h4>Цвет изделия: '+colr(w.color).name+'</h4><div class="sw">'+pr.colors.map(function(id){return '<button data-a="wcolor" data-id="'+id+'" title="'+colr(id).name+'" aria-label="'+colr(id).name+'" class="'+(w.color===id?'on':'')+'" style="background:'+colr(id).hex+'"></button>'}).join('')+'</div></div>';
+  h+='<div class="card stack"><div class="row between"><h4>Варианты от AI</h4><span class="small muted">Использовано '+S.settings.aiUsed+' из '+S.settings.aiQuota+' генераций в месяце</span></div><div><button class="btn" data-a="gen"'+(w.gen?' disabled':'')+'>'+(w.gen?'Генерируем…':'Подобрать 3 варианта')+'</button></div>';
+  if(w.variants.length)h+='<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">'+w.variants.map(function(v){return '<button class="pcard '+(w.color===v.color?'on':'')+'" data-a="pickvar" data-id="'+v.color+'" data-pl="'+v.place+'"><div class="mock sm">'+garment({shape:pr.shape,hex:colr(v.color).hex,logo:w.logo||c.logo,place:v.place,scale:100,dx:0,dy:0,real:w.real})+'</div><span class="small">'+colr(v.color).name+', '+PLACES[v.place].toLowerCase()+'</span></button>'}).join('')+'</div>';
+  return h+'</div>';
+}
+function wStep3(c,w,pr){
+  var h='<div><h2>Размеры и количество</h2><p class="muted">Минимальный тираж: '+pr.min+' шт.</p></div><div class="card stack">';
+  h+='<label class="chk"><input type="checkbox" data-set="wiz.link" '+(w.link?'checked':'')+'><span>Сотрудники выберут размер сами по ссылке<br><span class="small muted">Мы соберём размеры и покажем итог до запуска.</span></span></label>';
+  if(w.link){
+    h+='<label class="f">Ориентировочное количество<input type="number" min="0" data-set="wiz.est" data-t="n" data-live="1" value="'+w.est+'"></label><div class="row"><input type="text" readonly value="https://jamo.uz/size/SP-2026-10" style="max-width:300px" id="lnk"><button class="btn sm" data-a="copylink">Копировать</button></div>';
+  }else if(pr.sized){
+    h+='<div class="tw"><table class="sizes"><tr><th></th>'+SIZES.map(function(s){return '<th>'+s+'</th>'}).join('')+'</tr>';
+    [['m','Муж.'],['w','Жен.']].forEach(function(g){h+='<tr><td>'+g[1]+'</td>'+SIZES.map(function(s){return '<td><input type="number" min="0" aria-label="'+g[1]+' '+s+'" data-set="wiz.'+g[0]+'.'+s+'" data-t="n" data-live="1" value="'+w[g[0]][s]+'"></td>'}).join('')+'</tr>'});
+    h+='</table></div>';
+  }else{
+    h+='<label class="f">Количество<input type="number" min="0" data-set="wiz.one" data-t="n" data-live="1" value="'+w.one+'"></label>';
+  }
+  h+='<div class="row between"><b>Всего</b><b class="mono"><span id="qtyTot">'+wizQty(w)+'</span> шт</b></div></div>';
+  h+='<label class="chk card"><input type="checkbox" data-set="wiz.sample" '+(w.sample?'checked':'')+'><span>Сначала заказать пробный образец (1 шт)<br><span class="small muted">Изготовим образец за 3–5 дней. Основной тираж запустим после вашего одобрения.</span></span></label>';
+  return h;
+}
+function wStep4(c,w,pr){
+  var it=wizItem(w,c),p=priceItem(it);
+  var h='<div><h2>Проверьте заявку</h2></div><div class="card stack"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><div class="thumb">'+mockHtml(it,c,'sm')+'</div><div><b>'+pr.name+'</b>, '+colr(w.color).name.toLowerCase()+'<div class="small muted">'+PLACES[w.place]+' · '+S.settings.methods[w.method].name+' · '+it.qty+' шт'+(w.link?' · размеры по ссылке':'')+'</div><div class="small muted">Срок производства: около '+pr.lead+' дней</div></div></div></div>';
+  h+='<div class="card stack"><label class="f">Адрес доставки<select data-set="wiz.addr">'+opts(c.addr.map(function(a){return [a,a]}),w.addr)+'</select></label><label class="f">Желаемая дата получения<input type="date" data-set="wiz.due" value="'+w.due+'"></label><label class="f">Комментарий для менеджера<textarea data-set="wiz.comment" placeholder="Например: нужны светоотражающие полосы">'+esc(w.comment)+'</textarea></label></div>';
+  h+='<p class="note">После отправки менеджер проверит макет, подготовит коммерческое предложение и договор. Заказ в производство уходит только после вашего подтверждения и оплаты.</p>';
+  return h;
+}
+var COLS=[['Новые заявки',['mockup']],['КП',['quote']],['Оплата',['payment']],['В производстве',['cutting','sewing','branding','qc']],['Отгрузка',['packing','delivery']],['Закрыты',['done']]];
+function managerView(v){
+  return {funnel:funnelView,clients:clientsView,catalog:catalogView,campaigns:campaignsView,analytics:analyticsView}[v]();
+}
+function funnelView(){
+  var h='<div class="stack"><div class="row between"><h1>Воронка заказов</h1><span class="small muted">Нажмите на карточку, чтобы подтвердить, назначить менеджера или передать на фабрику</span></div><div class="kan">';
+  COLS.forEach(function(col){
+    var list=S.orders.filter(function(o){return col[1].indexOf(o.stage)>-1});
+    h+='<div class="col"><div class="row between"><h4>'+col[0]+'</h4><span class="chip gray">'+list.length+'</span></div>';
+    list.forEach(function(o){
+      var c=cli(o.clientId),ready=o.stage==='payment'&&o.paid&&!o.workshop;
+      h+='<button class="ocard" data-a="sel" data-o="'+o.id+'"><div class="row between"><span class="mono small">'+o.id+'</span>'+(ready?'<span class="chip ok">Оплачен, передать</span>':stageChip(o))+'</div><b>'+esc(c.name)+'</b><span class="small muted">'+esc(itemsText(o))+'</span><div class="row between small"><span class="mono">'+fmt(gross(o.net))+'</span><span class="muted">до '+fd(o.due)+'</span></div></button>';
+    });
+    if(!list.length)h+='<p class="small muted" style="padding:6px">Пусто</p>';
+    h+='</div>';
+  });
+  return h+'</div></div>';
+}
+function drawer(o){
+  if(!o)return '';
+  var c=cli(o.clientId),i=S.orders.findIndex(function(x){return x.id===o.id});
+  var h='<div class="veil" data-a="close"></div><aside class="drawer stack" role="dialog" aria-label="Заказ '+o.id+'"><div class="row between"><div class="row"><h2 class="mono">'+o.id+'</h2>'+stageChip(o)+(o.paid?'<span class="chip ok">Оплачен</span>':'')+'</div><button class="btn sm" data-a="close">Закрыть</button></div>';
+  h+='<div><b>'+esc(c.name)+'</b><div class="small muted">'+esc(c.contact)+' · '+esc(c.phone)+(c.status==='pending'?' · <span style="color:var(--warn)">компания не подтверждена</span>':'')+'</div></div>'+stepper(o);
+  h+='<div class="card stack">';
+  if(o.stage==='mockup')h+='<button class="btn primary" data-a="mgr" data-do="quote" data-o="'+o.id+'">Макет проверен, подготовить КП</button>';
+  if(o.stage==='quote')h+='<button class="btn primary" data-a="mgr" data-do="topay" data-o="'+o.id+'">КП согласовано, выставить счёт</button>';
+  if(o.stage==='payment'){
+    h+='<div class="row"><button class="btn" data-a="mgr" data-do="paid" data-o="'+o.id+'">'+(o.paid?'Снять отметку об оплате':'Отметить оплату')+'</button></div>';
+    h+='<label class="f">Цех<select id="ws-pick">'+opts([['','Выберите цех']].concat(S.workshops.map(function(w){return [w.id,w.name]})),o.workshop||'')+'</select></label><button class="btn primary" data-a="mgr" data-do="handoff" data-o="'+o.id+'"'+(o.paid?'':' disabled')+'>Передать на фабрику</button>'+(o.paid?'':'<p class="small muted">Передача доступна после оплаты.</p>');
+  }
+  if(['cutting','sewing','branding','qc','packing','delivery'].indexOf(o.stage)>-1)h+='<button class="btn primary" data-a="adv" data-o="'+o.id+'">Следующий этап: '+stageName(STAGES[STAGES.findIndex(function(s){return s[0]===o.stage})+1][0])+'</button>';
+  h+='</div><div class="card stack"><h4>Редактирование</h4><div class="g2"><label class="f">Этап<select data-edit="orders.'+i+'.stage">'+opts(STAGES,o.stage)+'</select></label><label class="f">Менеджер<select data-edit="orders.'+i+'.manager">'+opts(MGR.map(function(m){return [m,m]}),o.manager)+'</select></label><label class="f">Срок<input type="date" data-edit="orders.'+i+'.due" value="'+o.due+'"></label><label class="f">Цех<select data-edit="orders.'+i+'.workshop">'+opts([['','Не назначен']].concat(S.workshops.map(function(w){return [w.id,w.name]})),o.workshop||'')+'</select></label></div><label class="f">Внутренняя заметка<textarea data-edit="orders.'+i+'.note">'+esc(o.note)+'</textarea></label></div>';
+  h+='<div class="g2">';
+  o.items.forEach(function(it){h+='<div class="card stack">'+mockHtml(it,c)+'<div class="small muted">'+prod(it.p).name+' · '+PLACES[it.place]+' · '+S.settings.methods[it.method].name+' · '+it.qty+' шт</div></div>'});
+  h+='</div><div class="card stack"><h4>Техкарта для фабрики</h4>'+techcard(o)+'</div><div class="card stack"><h4>Стоимость</h4>'+priceLines(o)+'</div>'+chatBox(o,'manager');
+  h+='<div class="card stack"><h4>История</h4>'+(o.log||[]).map(function(l){return '<div class="small"><span class="mono muted">'+fd(l.t)+'</span> '+esc(l.text)+'</div>'}).join('')+'</div></aside>';
+  return h;
+}
+function techcard(o){
+  var ws=S.workshops.find(function(w){return w.id===o.workshop});
+  return o.items.map(function(it){
+    var pr=prod(it.p);
+    return '<div class="small" style="line-height:1.7"><b>'+pr.name+'</b> · '+colr(it.color).name+' · '+pr.fabric+'<br>Нанесение: '+PLACES[it.place]+', '+S.settings.methods[it.method].name+', размер '+it.scale+'%<br>Тираж: '+it.qty+' шт'+(it.sizes&&it.sizes.link?' (размеры по ссылке)':'')+'<br>Упаковка: поштучно в пакет, короб по 20 шт<br>Срок: '+fd(o.due)+(ws?' · '+ws.name:'')+'</div>'+(pr.sized&&!(it.sizes&&it.sizes.link)?sizeTable(it):'');
+  }).join('<hr style="border:0;border-top:1px dashed var(--line);width:100%">');
+}
+function clientsView(){
+  var h='<div class="stack"><h1>Клиенты</h1>';
+  var pend=S.clients.filter(function(c){return c.status==='pending'});
+  if(pend.length)h+='<div class="banner row between"><span>Ждут подтверждения: '+pend.map(function(c){return esc(c.name)}).join(', ')+'</span></div>';
+  h+='<div class="tw"><table><tr><th>Компания</th><th>Отрасль</th><th>Контакт</th><th>Статус</th><th>Последний заказ</th><th>Напоминать, мес.</th><th>Скидка, %</th><th></th></tr>';
+  S.clients.forEach(function(c,i){
+    var lo=S.orders.filter(function(o){return o.clientId===c.id}).sort(function(a,b){return a.created<b.created?1:-1})[0];
+    h+='<tr><td><input type="text" data-edit="clients.'+i+'.name" value="'+esc(c.name)+'"></td><td><select data-edit="clients.'+i+'.ind">'+opts(Object.keys(INDS).map(function(k){return [k,INDS[k]]}),c.ind)+'</select></td><td><input type="text" data-edit="clients.'+i+'.contact" value="'+esc(c.contact)+'"><div class="small muted mono">'+esc(c.phone)+'</div></td>';
+    h+='<td>'+(c.status==='pending'?'<button class="btn sm primary" data-a="approve" data-c="'+c.id+'">Подтвердить</button>':'<span class="chip ok">Активен</span>')+'</td><td class="small">'+(lo?fd(lo.created)+'<br><span class="muted">'+oq(lo)+' шт</span>':'—')+'</td>';
+    h+='<td><select data-edit="clients.'+i+'.reminder" data-t="n">'+opts([[3,3],[6,6],[9,9],[12,12]],c.reminder)+'</select></td><td><input type="number" min="0" max="30" data-edit="clients.'+i+'.discount" data-t="n" value="'+c.discount+'"></td><td><button class="btn sm" data-a="remind" data-c="'+c.id+'">Напомнить сейчас</button></td></tr>';
+  });
+  h+='</table></div><div class="card stack"><h3>Кому пора напомнить</h3>';
+  var any=false;
+  S.clients.forEach(function(c){var d=dueList(c);d.forEach(function(x){any=true;h+='<div class="row between"><span><b>'+esc(c.name)+'</b>: '+prod(x.p).name+', '+x.qty+' шт, '+fd(x.date)+'</span><span class="chip warn">'+x.months.toFixed(1).replace('.',',')+' мес.</span></div>'})});
+  if(!any)h+='<p class="muted">Все клиенты заказывали недавно.</p>';
+  return h+'</div></div>';
+}
+function catalogView(){
+  var s=S.settings,h='<div class="stack"><div class="row between"><h1>Каталог и цены</h1><span class="small muted">Цены в сумах без НДС. Значения в прототипе условные.</span></div><div class="tw"><table><tr><th>Позиция</th><th>Тип</th><th>База, сум</th><th>Мин. тираж</th><th>Срок, дн.</th><th>Материал</th></tr>';
+  S.products.forEach(function(p,i){h+='<tr><td><input type="text" data-edit="products.'+i+'.name" value="'+esc(p.name)+'"></td><td class="small muted">'+p.shape+'</td><td><input type="number" min="0" step="1000" data-edit="products.'+i+'.base" data-t="n" value="'+p.base+'"></td><td><input type="number" min="1" data-edit="products.'+i+'.min" data-t="n" value="'+p.min+'"></td><td><input type="number" min="1" data-edit="products.'+i+'.lead" data-t="n" value="'+p.lead+'"></td><td><input type="text" data-edit="products.'+i+'.fabric" value="'+esc(p.fabric)+'"></td></tr>'});
+  h+='</table></div><div><button class="btn sm" data-a="addprod">Добавить позицию</button></div><div class="g2"><div class="card stack"><h3>Скидки за тираж</h3>';
+  s.tiers.forEach(function(t,i){h+='<div class="row" style="flex-wrap:nowrap"><label class="f" style="flex:1">От, шт<input type="number" data-edit="settings.tiers.'+i+'.from" data-t="n" value="'+t.from+'"></label><label class="f" style="flex:1">Скидка, %<input type="number" data-edit="settings.tiers.'+i+'.pct" data-t="n" value="'+t.pct+'"></label><button class="btn sm danger" data-a="deltier" data-k="'+i+'">×</button></div>'});
+  h+='<div><button class="btn sm" data-a="addtier">Добавить ступень</button></div></div><div class="card stack"><h3>Способы нанесения</h3>';
+  Object.keys(s.methods).forEach(function(k){var m=s.methods[k];h+='<div class="row" style="flex-wrap:nowrap"><b style="min-width:110px">'+m.name+'</b><label class="f" style="flex:1">За шт<input type="number" data-edit="settings.methods.'+k+'.fee" data-t="n" value="'+m.fee+'"></label><label class="f" style="flex:1">Подготовка<input type="number" data-edit="settings.methods.'+k+'.setup" data-t="n" value="'+m.setup+'"></label></div>'});
+  h+='</div></div><div class="card g2"><label class="f">НДС, %<input type="number" data-edit="settings.vat" data-t="n" value="'+s.vat+'"></label><label class="f">Лимит AI-макетов в месяц<input type="number" data-edit="settings.aiQuota" data-t="n" value="'+s.aiQuota+'"></label><label class="f">Период напоминаний по умолчанию, мес.<input type="number" data-edit="settings.defaultReminder" data-t="n" value="'+s.defaultReminder+'"></label></div></div>';
+  return h;
+}
+function campaignsView(){
+  var cs=S.camp||(S.camp={title:'Зимняя коллекция',p:'hoodie',color:'navy',seg:'all',msg:'{company}, начинается сезон. Мы подготовили изделие с вашим логотипом. Заказ от 30 шт.',ch:['tg','email'],prev:'c1'});
+  var pr=prod(cs.p),pc=cli(cs.prev)||S.clients[0];
+  var rec=S.clients.filter(function(c){return c.status==='approved'&&(cs.seg==='all'||c.ind===cs.seg)});
+  var h='<div class="stack"><h1>Рассылки и сезонные предложения</h1><div class="split"><div class="stack"><div class="card stack"><h3>Новая рассылка</h3>';
+  h+='<label class="f">Заголовок<input type="text" data-set="camp.title" value="'+esc(cs.title)+'"></label><div class="g2"><label class="f">Изделие<select data-set="camp.p">'+opts(S.products.map(function(p){return [p.id,p.name]}),cs.p)+'</select></label><label class="f">Цвет<select data-set="camp.color">'+opts(prod(cs.p).colors.map(function(id){return [id,colr(id).name]}),cs.color)+'</select></label><label class="f">Кому<select data-set="camp.seg">'+opts([['all','Всем клиентам']].concat(Object.keys(INDS).map(function(k){return [k,INDS[k]]})),cs.seg)+'</select></label><label class="f">Показать макет клиента<select data-set="camp.prev">'+opts(S.clients.map(function(c){return [c.id,c.name]}),cs.prev)+'</select></label></div>';
+  h+='<label class="f">Текст ({company} подставит название компании)<textarea data-set="camp.msg">'+esc(cs.msg)+'</textarea></label><h4>Каналы</h4><div class="row">';
+  [['tg','Telegram'],['sms','SMS'],['email','Email'],['push','Push']].forEach(function(k){h+='<label class="chk"><input type="checkbox" data-a="chch" data-k="'+k[0]+'" '+(cs.ch.indexOf(k[0])>-1?'checked':'')+'> '+k[1]+'</label>'});
+  h+='</div><div class="row between"><span class="small muted">Получатели: '+rec.length+'. Будет создано '+rec.length+' персональных макетов (лимит: '+(S.settings.aiQuota-S.settings.aiUsed)+' осталось)</span><button class="btn primary" data-a="send-camp">Отправить</button></div></div>';
+  h+='<div class="card stack"><h3>Автоматические сезонные триггеры</h3>';
+  S.seasons.forEach(function(se,i){h+='<label class="chk"><input type="checkbox" data-edit="seasons.'+i+'.on" '+(se.on?'checked':'')+'><span>'+esc(se.name)+' <span class="small muted">· старт '+se.date+'</span></span></label>'});
+  h+='<p class="small muted">Включённый триггер сам создаёт черновик рассылки за 2 недели до сезона.</p></div>';
+  h+='<div class="card stack"><h3>История</h3>';
+  S.campaigns.slice().reverse().forEach(function(k){h+='<div class="row between"><span><b>'+esc(k.title)+'</b><br><span class="small muted">'+fd(k.date)+' · '+(k.seg==='all'?'все':INDS[k.seg])+'</span></span><span class="chip">'+k.sent+' получ.</span></div>'});
+  h+='</div></div><aside class="stack sticky"><h4>Так увидит клиент</h4>'+mockHtml({p:cs.p,color:cs.color,place:pr.places[0],scale:100,dx:0,dy:0,real:true},pc)+'<div class="card"><b>'+esc(cs.title)+'</b><p class="muted" style="margin-top:6px">'+esc(cs.msg.replace('{company}',pc.name))+'</p></div></aside></div></div>';
+  return h;
+}
+function analyticsView(){
+  var net=S.orders.reduce(function(a,o){return a+o.net},0),byP={};
+  S.orders.forEach(function(o){o.items.forEach(function(i){byP[i.p]=(byP[i.p]||0)+i.qty})});
+  var max=Math.max.apply(null,Object.keys(byP).map(function(k){return byP[k]}).concat([1]));
+  var cc={};S.orders.forEach(function(o){cc[o.clientId]=(cc[o.clientId]||0)+1});
+  var ks=Object.keys(cc),rep=ks.filter(function(k){return cc[k]>1}).length;
+  var h='<div class="stack"><h1>Аналитика</h1><div class="g2"><div class="card"><h4>Выручка по заказам (с НДС)</h4><p class="mono" style="font-size:22px;margin-top:6px">'+fmt(gross(net))+'</p></div><div class="card"><h4>Повторные клиенты</h4><p class="mono" style="font-size:22px;margin-top:6px">'+rep+' из '+ks.length+'</p></div><div class="card"><h4>Заказов всего</h4><p class="mono" style="font-size:22px;margin-top:6px">'+S.orders.length+'</p></div></div>';
+  h+='<div class="card stack"><h3>Тираж по изделиям, шт</h3><div class="bars">'+Object.keys(byP).sort(function(a,b){return byP[b]-byP[a]}).map(function(k){return '<div class="l"><span>'+prod(k).name+'</span><div class="bar"><i style="width:'+(byP[k]/max*100)+'%"></i></div><span class="mono">'+byP[k]+'</span></div>'}).join('')+'</div></div>';
+  h+='<div class="card stack"><h3>Заказы по этапам</h3><div class="row">'+STAGES.map(function(s){var n=S.orders.filter(function(o){return o.stage===s[0]}).length;return n?'<span class="chip">'+s[1]+': '+n+'</span>':''}).join('')+'</div></div></div>';
+  return h;
+}
+
+/* ---------- factory ---------- */
+function factoryView(v){
+  if(v==='stock'){
+    var h='<div class="stack"><h1>Склад материалов</h1><div class="tw"><table><tr><th>Материал</th><th>Остаток</th><th>Минимум</th><th>Статус</th></tr>';
+    S.stock.forEach(function(s,i){var low=s.qty<s.min,eq=s.qty===s.min;h+='<tr><td><input type="text" data-edit="stock.'+i+'.name" value="'+esc(s.name)+'"></td><td><div class="row" style="flex-wrap:nowrap"><input type="number" data-edit="stock.'+i+'.qty" data-t="n" value="'+s.qty+'"><span class="small muted">'+s.unit+'</span></div></td><td><input type="number" data-edit="stock.'+i+'.min" data-t="n" value="'+s.min+'"></td><td>'+(low?'<span class="chip bad">Закупить</span>':eq?'<span class="chip warn">На минимуме</span>':'<span class="chip ok">Достаточно</span>')+'</td></tr>'});
+    return h+'</table></div><p class="note">Если материала не хватает, менеджер увидит предупреждение до передачи заказа в цех.</p></div>';
+  }
+  var h2='<div class="stack"><h1>Очередь цеха</h1><div class="g2">';
+  S.workshops.forEach(function(w,i){
+    var q=S.orders.filter(function(o){return o.workshop===w.id&&['cutting','sewing','branding','qc','packing'].indexOf(o.stage)>-1}).reduce(function(a,o){return a+oq(o)},0),pc=Math.min(100,q/w.cap*100);
+    h2+='<div class="card stack"><div class="row between"><b>'+w.name+'</b><span class="mono small">'+q+' / '+w.cap+' шт в месяц</span></div><div class="bar"><i class="'+(pc>85?'bad':pc>60?'warn':'')+'" style="width:'+pc+'%"></i></div><label class="f">Мощность, шт/мес<input type="number" data-edit="workshops.'+i+'.cap" data-t="n" value="'+w.cap+'"></label></div>';
+  });
+  h2+='</div>';
+  var list=S.orders.filter(function(o){return o.workshop&&['cutting','sewing','branding','qc','packing'].indexOf(o.stage)>-1});
+  if(!list.length)h2+='<div class="empty">Заказов в цехе нет. Менеджер передаёт заказы после оплаты.</div>';
+  list.forEach(function(o){
+    var c=cli(o.clientId),ws=S.workshops.find(function(w){return w.id===o.workshop});
+    h2+='<div class="card stack"><div class="row between"><div class="row"><b class="mono">'+o.id+'</b>'+stageChip(o)+'<span class="chip gray">'+(ws?ws.name:'')+'</span></div><button class="btn primary sm" data-a="adv" data-o="'+o.id+'">Этап выполнен: '+stageName(o.stage)+'</button></div>'+stepper(o)+'<div class="row" style="align-items:flex-start;flex-wrap:nowrap"><div class="thumb" style="width:120px">'+mockHtml(o.items[0],c,'sm')+'</div><div class="stack" style="flex:1;min-width:0"><b>'+esc(c.name)+'</b>'+techcard(o)+(o.note?'<p class="note">'+esc(o.note)+'</p>':'')+'</div></div></div>';
+  });
+  return h2+'</div>';
+}
+function go(v){S.views[S.role]=v;S.sel=null;render(false)}
+function advance(o){
+  var i=STAGES.findIndex(function(s){return s[0]===o.stage});
+  if(i>=STAGES.length-1)return;
+  o.stage=STAGES[i+1][0];logEvt(o,'Этап: '+stageName(o.stage));
+}
+function submitOrder(){
+  var c=cli(S.clientId),w=S.wiz,pr=prod(w.p),it=wizItem(w,c);
+  if(it.qty<1){toast('Укажите количество');return}
+  if(!w.sample&&it.qty<pr.min){toast('Минимальный тираж: '+pr.min+' шт');return}
+  var o={id:'O-'+(2102+S.orders.length),clientId:c.id,created:TODAY,due:w.due,stage:'mockup',paid:false,manager:c.manager||MGR[0],workshop:null,note:'',sample:w.sample,items:[it],chat:[],log:[{t:TODAY,text:'Заявка создана клиентом'}]};
+  if(w.comment)o.chat.push({from:'client',text:w.comment,t:TODAY});
+  o.net=calcNet(o);S.orders.push(o);S.oid=o.id;S.views.client='order';S.wiz=null;
+  render(false);toast('Заявка отправлена. Менеджер подготовит КП.');
+}
+function register(){
+  var name=($('#r-name').value||'').trim();if(!name){toast('Введите название компании');return}
+  var words=name.replace(/[«»"]/g,'').split(/\s+/).filter(Boolean),ini=(words[0][0]+(words[1]?words[1][0]:words[0][1]||'')).toUpperCase();
+  var cols=['#1f6f78','#7a3b8f','#b36a00','#2c7fb8','#2f7d3b'],col=cols[S.clients.length%cols.length];
+  var id='c'+(S.clients.length+1);
+  S.clients.push({id:id,name:name,ind:$('#r-ind').value,inn:$('#r-inn').value,contact:$('#r-contact').value,phone:$('#r-phone').value,status:'pending',reminder:S.settings.defaultReminder,discount:0,manager:'',logo:makeLogo(esc(ini),col,esc((words[0]||'').slice(0,12).toUpperCase()),esc((words.slice(1).join(' ')||'').slice(0,14).toUpperCase())),users:[{name:$('#r-contact').value||'Контакт',role:'Закупщик'}],addr:[],ch:{tg:true,sms:true,email:false,push:false}});
+  S.clientId=id;S.auth=true;S.role='client';S.views.client='dash';render(false);
+}
+function onClick(e){
+  var el=e.target.closest('[data-a]');if(!el)return;
+  var a=el.dataset.a,d=el.dataset,c=cli(S.clientId),o,w=S.wiz;
+  switch(a){
+   case 'authtab':S.authTab=d.t;render(false);break;
+   case 'login':S.auth=true;S.role='client';S.clientId='c1';S.views.client='dash';render(false);break;
+   case 'register':register();break;
+   case 'demo':S.auth=true;S.role=d.r;render(false);break;
+   case 'logout':S.auth=false;S.sel=null;render(false);break;
+   case 'role':S.role=d.r;S.sel=null;render(false);break;
+   case 'nav':go(d.v);break;
+   case 'open':S.oid=d.o;S.views.client='order';render(false);break;
+   case 'sel':S.sel=d.o;render();break;
+   case 'close':S.sel=null;render();break;
+   case 'wprod':{var p=prod(d.id);S.wiz.p=p.id;w.color=p.colors[0];w.place=p.places[0];w.variants=[];w.step=1;render(false);break}
+   case 'wplace':w.place=d.id;render();break;
+   case 'wcolor':w.color=d.id;render();break;
+   case 'gen':{
+     if(S.settings.aiUsed+3>S.settings.aiQuota){toast('Лимит AI-макетов исчерпан');break}
+     w.gen=true;S.settings.aiUsed+=3;render();
+     setTimeout(function(){var pr=prod(w.p),cs=pr.colors.filter(function(x){return x!==w.color}).slice(0,3);w.variants=cs.map(function(x,i){return {color:x,place:pr.places[i%pr.places.length]}});w.gen=false;if(S.wiz===w&&S.auth)render()},1100);break}
+   case 'pickvar':w.color=d.id;w.place=d.pl;render();break;
+   case 'wiz-next':if(w.step===3&&wizQty(w)<1){toast('Укажите количество');break}w.step=Math.min(4,w.step+1);render(false);break;
+   case 'wiz-back':w.step=Math.max(0,w.step-1);render(false);break;
+   case 'wiz-reset':S.wiz=newWiz(null,c);render(false);break;
+   case 'wiz-logo-reset':w.logo=null;w.logoName='';render();break;
+   case 'copylink':{var t='https://jamo.uz/size/SP-2026-10';try{navigator.clipboard.writeText(t).then(function(){toast('Ссылка скопирована')},function(){toast('Выделите ссылку и скопируйте вручную')})}catch(x){toast('Выделите ссылку и скопируйте вручную')}break}
+   case 'submit':submitOrder();break;
+   case 'repeat':{o=ord(d.o);var it=d.p?o.items.find(function(i){return i.p===d.p}):o.items[0];S.wiz=wizFromItem(it||o.items[0],c);S.views.client='new';render(false);toast('Данные прошлого заказа подставлены. Проверьте количество.');break}
+   case 'newprod':S.wiz=newWiz(d.p,c);S.views.client='new';render(false);break;
+   case 'snooze':toast('Напомним через месяц');break;
+   case 'doc':toast('В прототипе документ не формируется');break;
+   case 'confirmq':o=ord(d.o);o.stage='payment';logEvt(o,'КП подтверждено клиентом, выставлен счёт');render();toast('КП подтверждено. Счёт доступен для оплаты.');break;
+   case 'pay':o=ord(d.o);o.paid=true;logEvt(o,'Оплата получена');render();toast('Оплата прошла (демо)');break;
+   case 'send':{var inp=$('#chat-in'),tx=(inp.value||'').trim();if(!tx)break;o=ord(d.o);o.chat.push({from:d.w==='client'?'client':'JAMO',text:tx,t:TODAY});render();break}
+   case 'addaddr':c.addr.push('Новый адрес');render();break;
+   case 'deladdr':c.addr.splice(+d.k,1);render();break;
+   case 'adduser':c.users.push({name:'Новый сотрудник',role:'Закупщик'});render();break;
+   case 'deluser':c.users.splice(+d.k,1);render();break;
+   case 'mgr':{
+     o=ord(d.o);
+     if(d.do==='quote'){o.stage='quote';logEvt(o,'Макет проверен, подготовлено КП')}
+     else if(d.do==='topay'){o.stage='payment';logEvt(o,'КП согласовано, выставлен счёт')}
+     else if(d.do==='paid'){o.paid=!o.paid;logEvt(o,o.paid?'Оплата получена':'Отметка об оплате снята')}
+     else if(d.do==='handoff'){
+       var ws=$('#ws-pick').value;if(!ws){toast('Выберите цех');break}
+       o.workshop=ws;o.stage='cutting';logEvt(o,'Передан на фабрику: '+S.workshops.find(function(x){return x.id===ws}).name);
+       var low=S.stock.filter(function(s){return s.qty<s.min});
+       toast(low.length?'Передано в цех. Внимание: мало материала ('+low.length+' поз.)':'Заказ передан в цех');
+     }
+     render();break}
+   case 'adv':o=ord(d.o);advance(o);render();toast('Этап обновлён: '+stageName(o.stage));break;
+   case 'approve':cli(d.c).status='approved';cli(d.c).manager=MGR[0];render();toast('Компания подтверждена');break;
+   case 'remind':toast('Напоминание отправлено в Telegram и SMS (демо)');break;
+   case 'addprod':S.products.push({id:'p'+(S.products.length+1),name:'Новая позиция',shape:'tee',base:50000,min:50,lead:10,fabric:'Хлопок',sized:true,places:['left','center','back'],colors:['white','black','navy']});render();break;
+   case 'addtier':S.settings.tiers.push({from:2000,pct:18});render();break;
+   case 'deltier':S.settings.tiers.splice(+d.k,1);render();break;
+   case 'chch':{var cs=S.camp,ix=cs.ch.indexOf(d.k);if(ix>-1)cs.ch.splice(ix,1);else cs.ch.push(d.k);render();break}
+   case 'send-camp':{
+     var cs2=S.camp,rec=S.clients.filter(function(x){return x.status==='approved'&&(cs2.seg==='all'||x.ind===cs2.seg)});
+     if(!cs2.ch.length){toast('Выберите хотя бы один канал');break}
+     if(!rec.length){toast('Нет получателей');break}
+     if(S.settings.aiUsed+rec.length>S.settings.aiQuota){toast('Лимит AI-макетов исчерпан');break}
+     S.settings.aiUsed+=rec.length;S.campaigns.push({id:'k'+(S.campaigns.length+1),title:cs2.title,p:cs2.p,color:cs2.color,seg:cs2.seg,msg:cs2.msg,ch:cs2.ch.slice(),date:TODAY,sent:rec.length,cost:rec.length});
+     render();toast('Рассылка отправлена: '+rec.length+' получателей (демо)');break}
+  }
+}
+function onField(e){
+  var el=e.target.closest('[data-edit],[data-set]');if(!el)return;
+  var live=el.dataset.live==='1';
+  if(live&&e.type==='change'){save();return}
+  if(!live&&e.type==='input')return;
+  var path=el.dataset.edit||el.dataset.set,v;
+  if(el.type==='checkbox')v=el.checked;else if(el.dataset.t==='n')v=+el.value||0;else v=el.value;
+  setPath(S,path,v);
+  if(path==='camp.p')S.camp.color=prod(v).colors[0];
+  if(live){
+    if(el.dataset.out==='scale'){var sp=el.parentNode.querySelector('.mono');if(sp)sp.textContent=v+'%'}
+    refreshLive();save();return;
+  }
+  render();
+}
+function onFile(e){
+  var el=e.target;if(!el.dataset||!el.dataset.file||!el.files[0])return;
+  var f=el.files[0];
+  if(f.type.indexOf('image/')!==0){toast('Файл принят. Превью доступно для SVG, PNG и JPG.');return}
+  var r=new FileReader();
+  r.onload=function(){
+    if(el.dataset.file==='wiz'){S.wiz.logo=r.result;S.wiz.logoName=f.name}else cli(S.clientId).logo=r.result;
+    render();toast('Логотип загружен');
+  };
+  r.readAsDataURL(f);
+}
+document.addEventListener('click',onClick);
+document.addEventListener('change',function(e){if(e.target.dataset&&e.target.dataset.file)onFile(e);else onField(e)});
+document.addEventListener('input',onField);
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&S&&S.sel){S.sel=null;render()}});
+S=load();render(false);
+</script>
+
+</body></html>

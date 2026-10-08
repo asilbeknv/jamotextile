@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design tokens carried over from the prototype (prototype/main.html). RGB triplets for Tailwind alpha support. */
+:root {
+  --bg: 241 242 246;
+  --surface: 255 255 255;
+  --surface2: 246 247 251;
+  --ink: 20 26 46;
+  --muted: 91 98 122;
+  --line: 220 223 233;
+  --accent: 43 74 158;
+  --accent-ink: 255 255 255;
+  --accent-soft: 228 234 249;
+  --thread: 217 154 18;
+  --ok: 28 122 82;
+  --ok-soft: 223 243 232;
+  --warn: 143 86 0;
+  --warn-soft: 251 239 213;
+  --bad: 179 38 46;
+  --bad-soft: 251 227 228;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: 14 18 32;
+    --surface: 23 28 47;
+    --surface2: 29 35 56;
+    --ink: 232 235 245;
+    --muted: 154 162 187;
+    --line: 43 50 80;
+    --accent: 134 162 242;
+    --accent-ink: 14 18 32;
+    --accent-soft: 35 45 82;
+    --thread: 240 181 58;
+    --ok: 89 201 151;
+    --ok-soft: 23 58 44;
+    --warn: 240 181 58;
+    --warn-soft: 59 47 18;
+    --bad: 255 139 146;
+    --bad-soft: 64 24 28;
+    color-scheme: dark;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-bg text-ink font-sans text-sm antialiased;
+  }
+  h1, h2 {
+    @apply font-display;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-accent;
+  }
+}
+
+@layer components {
+  .field {
+    @apply w-full min-w-0 rounded-lg border border-line bg-surface px-3 py-2 text-ink placeholder:text-muted/70;
+  }
+  .label {
+    @apply flex flex-col gap-1 text-xs font-medium text-muted;
+  }
+  /* Signature "stitch line" divider */
+  .stitch {
+    @apply border-b-2 border-dashed border-thread;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

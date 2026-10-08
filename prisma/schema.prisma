@@ -1,0 +1,283 @@
+// JAMO Textile — data model.
+//
+// Two separate identity domains:
+//   * AdminUser    — JAMO staff (back office, /admin). Email + password.
+//   * CustomerUser — employees of a client Company (portal, /portal). Phone + SMS code.
+// They never share a table, a session cookie or a signing secret.
+//
+// Money is stored as whole UZS (so'm) in Int columns.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────── Identity ─────────────────────────
+
+enum AdminRole {
+  OWNER // full access, manages staff and settings
+  MANAGER // works orders and clients
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         AdminRole @default(MANAGER)
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  managedCompanies Company[] @relation("CompanyManager")
+  managedOrders    Order[]   @relation("OrderManager")
+}
+
+enum CustomerRole {
+  BUYER // places orders
+  ACCOUNTANT // invoices and payments
+  HR // sizes and staff
+  HEAD // company owner / director
+}
+
+model CustomerUser {
+  id          String       @id @default(cuid())
+  companyId   String
+  company     Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name        String
+  phone       String       @unique // E.164, e.g. +998901234567
+  role        CustomerRole @default(BUYER)
+  isActive    Boolean      @default(true)
+  lastLoginAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  orders Order[] @relation("OrderCreatedBy")
+
+  @@index([companyId])
+}
+
+// One-time login codes for customers. Only a hash of the code is stored.
+model OtpCode {
+  id         String    @id @default(cuid())
+  phone      String
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([phone, createdAt])
+}
+
+// ───────────────────────── Clients ─────────────────────────
+
+enum Industry {
+  HOSPITALITY // hotels and restaurants
+  RETAIL
+  INDUSTRY // manufacturing and logistics
+  SERVICE // service and medical
+  OTHER
+}
+
+enum CompanyStatus {
+  PENDING // registered, waiting for a JAMO manager to approve
+  APPROVED
+  BLOCKED
+}
+
+model Company {
+  id             String        @id @default(cuid())
+  name           String
+  inn            String?       @unique // taxpayer ID (ИНН / STIR)
+  industry       Industry      @default(OTHER)
+  status         CompanyStatus @default(PENDING)
+  logoUrl        String?
+  reminderMonths Int           @default(6) // "time to reorder" reminder period
+  discountPct    Int           @default(0) // individual discount on top of volume tiers
+  managerId      String?
+  manager        AdminUser?    @relation("CompanyManager", fields: [managerId], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  users     CustomerUser[]
+  addresses DeliveryAddress[]
+  orders    Order[]
+
+  @@index([status])
+}
+
+model DeliveryAddress {
+  id        String   @id @default(cuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  address   String
+  createdAt DateTime @default(now())
+
+  @@index([companyId])
+}
+
+// ───────────────────────── Catalog & pricing ─────────────────────────
+
+model Product {
+  id         String   @id @default(cuid())
+  slug       String   @unique // tee, cap, hoodie, ...
+  name       String
+  shape      String // mockup template key
+  basePrice  Int // UZS per unit, before discounts and decoration
+  minQty     Int
+  leadDays   Int
+  fabric     String
+  sized      Boolean  @default(true)
+  placements String[] // allowed logo placements: left, center, back, sleeve, front, side
+  colors     String[] // allowed Color.slug values
+  isActive   Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  orderItems OrderItem[]
+}
+
+model Color {
+  slug String @id
+  name String
+  hex  String
+}
+
+model DecorationMethod {
+  slug       String  @id // embroidery, screen, dtf, heat
+  name       String
+  feePerUnit Int
+  setupFee   Int // one-off per order line (digitising, screens, films)
+  isActive   Boolean @default(true)
+
+  orderItems OrderItem[]
+}
+
+model DiscountTier {
+  id     String @id @default(cuid())
+  minQty Int    @unique
+  pct    Int
+}
+
+// ───────────────────────── Production ─────────────────────────
+
+// Internal production sites. No factory login yet: admins assign orders here.
+model Workshop {
+  id               String  @id @default(cuid())
+  name             String
+  capacityPerMonth Int
+  isActive         Boolean @default(true)
+
+  orders Order[]
+}
+
+// ───────────────────────── Orders ─────────────────────────
+
+enum OrderStage {
+  MOCKUP // new request, manager checks the mockup
+  QUOTE // commercial offer sent, waiting for customer
+  PAYMENT // invoice issued
+  CUTTING
+  SEWING
+  BRANDING // logo application
+  QC // quality control
+  PACKING
+  DELIVERY
+  DONE
+  CANCELLED
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  number          String        @unique // human-facing, e.g. O-2041
+  companyId       String
+  company         Company       @relation(fields: [companyId], references: [id], onDelete: Restrict)
+  createdById     String?
+  createdBy       CustomerUser? @relation("OrderCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  managerId       String?
+  manager         AdminUser?    @relation("OrderManager", fields: [managerId], references: [id], onDelete: SetNull)
+  workshopId      String?
+  workshop        Workshop?     @relation(fields: [workshopId], references: [id], onDelete: SetNull)
+  stage           OrderStage    @default(MOCKUP)
+  isPaid          Boolean       @default(false)
+  paidAt          DateTime?
+  isSample        Boolean       @default(false)
+  dueDate         DateTime?
+  deliveryAddress String?
+  internalNote    String? // admin-only
+  netAmount       Int // sum of item totals, UZS, excl. VAT
+  vatPct          Int // VAT rate frozen at order time
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  items    OrderItem[]
+  events   OrderEvent[]
+  messages OrderMessage[]
+
+  @@index([companyId, createdAt])
+  @@index([stage])
+}
+
+model OrderItem {
+  id          String           @id @default(cuid())
+  orderId     String
+  order       Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product          @relation(fields: [productId], references: [id], onDelete: Restrict)
+  colorSlug   String
+  placement   String
+  methodSlug  String
+  method      DecorationMethod @relation(fields: [methodSlug], references: [slug], onDelete: Restrict)
+  logoUrl     String?
+  logoScale   Int              @default(100)
+  qty         Int
+  sizes       Json? // { men: {S,M,L,XL,XXL}, women: {...} } or { link: true }
+  // Price snapshot at order time
+  unitPrice   Int
+  discountPct Int
+  setupFee    Int
+  lineTotal   Int
+
+  @@index([orderId])
+}
+
+enum ActorType {
+  ADMIN
+  CUSTOMER
+  SYSTEM
+}
+
+// Audit trail and order timeline.
+model OrderEvent {
+  id        String    @id @default(cuid())
+  orderId   String
+  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  actorType ActorType
+  actorId   String?
+  actorName String?
+  message   String
+  createdAt DateTime  @default(now())
+
+  @@index([orderId, createdAt])
+}
+
+// Customer ↔ JAMO chat on an order.
+model OrderMessage {
+  id         String    @id @default(cuid())
+  orderId    String
+  order      Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  authorType ActorType
+  authorId   String?
+  authorName String
+  body       String
+  createdAt  DateTime  @default(now())
+
+  @@index([orderId, createdAt])
+}

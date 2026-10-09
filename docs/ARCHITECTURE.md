@@ -171,8 +171,11 @@ Workshop ─< Order                            ├─< OrderEvent   (timeline / 
 DiscountTier, Color, OtpCode                 └─< OrderMessage (customer ↔ JAMO chat)
 ```
 
-* **Order stages:** `MOCKUP → QUOTE → PAYMENT → CUTTING → SEWING → BRANDING →
-  QC → PACKING → DELIVERY → DONE` (+ `CANCELLED`). Transition rules live in
+* **Order stages:** `MOCKUP → QUOTE → PAYMENT → PRODUCTION → DELIVERY → DONE`
+  (Макет → КП → Оплата → Производство → Доставка → Закрыт), plus `CANCELLED`
+  for an order stopped at any point. Workshop steps (cutting, sewing, logo,
+  QC, packing) are one `PRODUCTION` stage; finer tracking can come back with
+  the factory realm. Transition rules live in
   `domain/order-stages.ts`: customers may only accept a quote; moving from
   `PAYMENT` into production requires payment and an assigned workshop.
 * **Prices are snapshotted** on `OrderItem` (unit price, discount, setup,
@@ -216,7 +219,7 @@ Each dashboard is built from three parts:
 | Widget | Data |
 | --- | --- |
 | KPIs | Revenue this month (gross, vs last month) · open orders · units in production · overdue |
-| Order pipeline | Count and value per column (New, Quote, Payment, Production, Shipping, Closed) → filtered list |
+| Order pipeline | Count and value per column (New, Quote, Payment, Production, Delivery, Closed) → filtered list |
 | Needs attention | Companies awaiting approval · paid orders not yet handed off · overdue orders |
 | Workshop load | Units in production vs monthly capacity per workshop (green → amber → red) |
 | Recent orders | Last 6 orders |

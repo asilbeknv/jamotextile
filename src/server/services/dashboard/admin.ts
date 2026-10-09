@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
-import { PIPELINE_COLUMNS, PRODUCTION_STAGES } from "@/domain/order-stages";
+import { PIPELINE_COLUMNS } from "@/domain/order-stages";
 import { grossAmount } from "@/domain/pricing";
 
 /**
@@ -44,7 +44,7 @@ export async function getAdminDashboard(now = new Date()) {
   const revenuePrev = lastMonth.reduce((a, o) => a + gross(o), 0);
   const overdue = orders.filter((o) => isOpen(o) && o.dueDate && o.dueDate < now);
   const readyToHandOff = orders.filter((o) => o.stage === "PAYMENT" && o.isPaid);
-  const inProduction = orders.filter((o) => PRODUCTION_STAGES.includes(o.stage));
+  const inProduction = orders.filter((o) => o.stage === "PRODUCTION");
 
   const pipeline = PIPELINE_COLUMNS.map((col) => {
     const list = orders.filter((o) => col.stages.includes(o.stage));

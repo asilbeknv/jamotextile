@@ -17,7 +17,7 @@ export function StageStepper({ stage }: { stage: OrderStage }) {
         const done = i < current;
         const now = i === current;
         return (
-          <li key={s} className={cn("relative min-w-[64px] flex-1 pt-5 text-center text-[11px]", done ? "text-ink" : now ? "font-bold text-accent" : "text-muted")}>
+          <li key={s} className={cn("relative min-w-[80px] flex-1 pt-5 text-center text-[11px]", done ? "text-ink" : now ? "font-bold text-accent" : "text-muted")}>
             <span className={cn("absolute inset-x-0 top-[6px] border-t-2", done || now ? "border-solid border-thread" : "border-dashed border-line")} />
             <span
               className={cn(

@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
-import { isActive, PRODUCTION_STAGES } from "@/domain/order-stages";
+import { isActive } from "@/domain/order-stages";
 import { grossAmount } from "@/domain/pricing";
 
 const MONTH_MS = 1000 * 60 * 60 * 24 * 30.44;
@@ -56,7 +56,7 @@ export async function getCustomerDashboard(companyId: string, now = new Date()) 
     company,
     kpis: {
       active: active.length,
-      inProduction: active.filter((o) => PRODUCTION_STAGES.includes(o.stage)).length,
+      inProduction: active.filter((o) => o.stage === "PRODUCTION").length,
       needsAction: needsAction.length,
       spentThisYear: orders
         .filter((o) => o.createdAt >= yearStart && o.isPaid)

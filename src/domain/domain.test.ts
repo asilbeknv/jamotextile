@@ -47,6 +47,9 @@ test("VAT", () => {
 
 test("stage flow", () => {
   assert.equal(nextStage("MOCKUP"), "QUOTE");
+  assert.equal(nextStage("PAYMENT"), "PRODUCTION");
+  assert.equal(nextStage("PRODUCTION"), "DELIVERY");
+  assert.equal(nextStage("DELIVERY"), "DONE");
   assert.equal(nextStage("DONE"), null);
   assert.equal(nextStage("CANCELLED"), null);
   assert.equal(stageProgress("MOCKUP"), 0);

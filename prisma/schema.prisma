@@ -184,14 +184,10 @@ enum OrderStage {
   MOCKUP // new request, manager checks the mockup
   QUOTE // commercial offer sent, waiting for customer
   PAYMENT // invoice issued
-  CUTTING
-  SEWING
-  BRANDING // logo application
-  QC // quality control
-  PACKING
+  PRODUCTION // in the workshop: cutting, sewing, logo, QC, packing
   DELIVERY
   DONE
-  CANCELLED
+  CANCELLED // not a step: an order stopped at any point
 }
 
 model Order {

@@ -34,6 +34,8 @@ const ADVANCE_LABEL: Partial<Record<string, string>> = {
   MOCKUP: "Макет проверен — подготовить КП",
   QUOTE: "КП согласовано — выставить счёт",
   PAYMENT: "Передать в цех",
+  PRODUCTION: "Производство завершено — в доставку",
+  DELIVERY: "Доставлено — закрыть заказ",
 };
 
 export default async function AdminOrderPage({ params }: Props) {

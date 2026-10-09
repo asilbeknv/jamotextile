@@ -5,11 +5,7 @@ export const STAGE_FLOW: OrderStage[] = [
   "MOCKUP",
   "QUOTE",
   "PAYMENT",
-  "CUTTING",
-  "SEWING",
-  "BRANDING",
-  "QC",
-  "PACKING",
+  "PRODUCTION",
   "DELIVERY",
   "DONE",
 ];
@@ -18,25 +14,19 @@ export const STAGE_LABEL: Record<OrderStage, string> = {
   MOCKUP: "Макет",
   QUOTE: "КП",
   PAYMENT: "Оплата",
-  CUTTING: "Раскрой",
-  SEWING: "Пошив",
-  BRANDING: "Нанесение",
-  QC: "ОТК",
-  PACKING: "Упаковка",
+  PRODUCTION: "Производство",
   DELIVERY: "Доставка",
   DONE: "Закрыт",
   CANCELLED: "Отменён",
 };
-
-export const PRODUCTION_STAGES: OrderStage[] = ["CUTTING", "SEWING", "BRANDING", "QC", "PACKING"];
 
 /** Groups used for the admin pipeline board and dashboard counters. */
 export const PIPELINE_COLUMNS: { key: string; label: string; stages: OrderStage[] }[] = [
   { key: "new", label: "Новые заявки", stages: ["MOCKUP"] },
   { key: "quote", label: "КП", stages: ["QUOTE"] },
   { key: "payment", label: "Оплата", stages: ["PAYMENT"] },
-  { key: "production", label: "В производстве", stages: PRODUCTION_STAGES },
-  { key: "shipping", label: "Отгрузка", stages: ["DELIVERY"] },
+  { key: "production", label: "Производство", stages: ["PRODUCTION"] },
+  { key: "delivery", label: "Доставка", stages: ["DELIVERY"] },
   { key: "done", label: "Закрыты", stages: ["DONE"] },
 ];
 

@@ -66,10 +66,11 @@ async function main() {
   // Staff
   const ownerEmail = (process.env.SEED_ADMIN_EMAIL ?? "admin@jamotextile.uz").toLowerCase();
   const ownerPassword = process.env.SEED_ADMIN_PASSWORD ?? "ChangeMe123!";
+  const ownerName = "Jamol Ramazanov";
   const owner = await db.adminUser.upsert({
     where: { email: ownerEmail },
-    update: {},
-    create: { email: ownerEmail, name: "Азиза Каримова", role: "OWNER", passwordHash: await bcrypt.hash(ownerPassword, 12) },
+    update: { name: ownerName }, // password is never overwritten on re-seed
+    create: { email: ownerEmail, name: ownerName, role: "OWNER", passwordHash: await bcrypt.hash(ownerPassword, 12) },
   });
   const manager = await db.adminUser.upsert({
     where: { email: "timur@jamotextile.uz" },

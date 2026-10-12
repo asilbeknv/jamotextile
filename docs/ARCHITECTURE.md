@@ -186,6 +186,10 @@ DiscountTier, Color, OtpCode                 └─< OrderMessage (customer ↔ 
   discount tier is chosen by the order's total quantity (`priceOrder` in
   `domain/pricing.ts`); minimum quantities apply per item. The server
   recomputes quantities and prices; the form's preview uses the same function.
+* **Catalog editing:** the OWNER edits each product's base price, minimum
+  order quantity and material on `/admin/catalog` (`updateProductAction`,
+  role checked inside the action). MANAGERs see the catalog read-only.
+  Changes apply to new orders only; placed orders keep their snapshot prices.
 * **Money** is whole UZS in integer columns.
 * **Order numbers** (`O-2041`) are human-facing; primary keys are cuids.
 
@@ -259,8 +263,8 @@ Checks: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`.
 
 | Phase | Scope |
 | --- | --- |
-| **1 — Foundation (done)** | Two realms, guarded dashboards, order lifecycle, multi-item order form, admin pipeline, client approval, catalog view |
-| 2 — Product depth | Port the SVG garment mockup and logo upload (S3-compatible storage); size collection by link; editable catalog/pricing; staff management (OWNER only); company profile editing and employee invites |
+| **1 — Foundation (done)** | Two realms, guarded dashboards, order lifecycle, multi-item order form, admin pipeline, client approval, owner-editable catalog (price, minimum, material) |
+| 2 — Product depth | Port the SVG garment mockup and logo upload (S3-compatible storage); size collection by link; editing colours, placements, decoration methods and discount tiers; staff management (OWNER only); company profile editing and employee invites |
 | 3 — Integrations | Eskiz SMS · Telegram bot (notifications, login codes) · Payme / Click payments (webhooks → `setPaid`) · Didox / Faktura.uz e-documents · PDF quote/invoice generation |
 | 4 — Growth | Campaigns and seasonal triggers, AI mockup variants, Uzbek/Russian/English i18n, analytics page, factory realm (`/factory`) for workshop staff |
 | Ops | Redis rate limiting for multi-instance, error tracking (Sentry), backups, CI (lint, typecheck, test, build) |

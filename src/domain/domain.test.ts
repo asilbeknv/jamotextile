@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { grossAmount, nextTier, priceLine, tierDiscount, vatAmount } from "./pricing";
+import { grossAmount, nextTier, priceLine, priceOrder, tierDiscount, vatAmount } from "./pricing";
 import { canAdvance, nextStage, stageProgress } from "./order-stages";
 import { formatUzPhone, normalizeUzPhone } from "./phone";
 
@@ -38,6 +38,27 @@ test("company discount stacks with tier and is capped", () => {
 
 test("zero quantity costs nothing, including setup", () => {
   assert.equal(priceLine({ basePrice: 1, qty: 0, feePerUnit: 1, setupFee: 999, tiers }).lineTotal, 0);
+});
+
+test("multi-item order: volume tier comes from total quantity", () => {
+  // 60 tees + 50 caps = 110 pcs → 5% tier applies to both lines, though each alone is under 100
+  const o = priceOrder(
+    [
+      { basePrice: 48_000, qty: 60, feePerUnit: 6_500, setupFee: 60_000 },
+      { basePrice: 36_000, qty: 50, feePerUnit: 9_000, setupFee: 180_000 },
+    ],
+    tiers,
+  );
+  assert.equal(o.totalQty, 110);
+  assert.deepEqual(o.lines.map((l) => l.discountPct), [5, 5]);
+  assert.equal(o.lines[0].unitPrice, 45_600 + 6_500);
+  assert.equal(o.lines[1].unitPrice, 34_200 + 9_000);
+  assert.equal(o.net, 52_100 * 60 + 60_000 + 43_200 * 50 + 180_000);
+});
+
+test("single-item order prices the same as priceLine", () => {
+  const line = { basePrice: 210_000, qty: 80, feePerUnit: 9_000, setupFee: 180_000 };
+  assert.equal(priceOrder([line], tiers).net, priceLine({ ...line, tiers }).lineTotal);
 });
 
 test("VAT", () => {

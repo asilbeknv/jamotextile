@@ -2,7 +2,7 @@ import "server-only";
 import type { ActorType, OrderStage, Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { canAdvance, nextStage, STAGE_LABEL } from "@/domain/order-stages";
-import { priceLine, VAT_PCT } from "@/domain/pricing";
+import { priceOrder, VAT_PCT } from "@/domain/pricing";
 
 export class DomainError extends Error {}
 
@@ -10,7 +10,7 @@ type Actor = { type: ActorType; id: string; name: string };
 
 const listInclude = {
   company: { select: { id: true, name: true } },
-  items: { include: { product: { select: { name: true, slug: true } } } },
+  items: { include: { product: { select: { name: true, slug: true } } }, orderBy: { id: "asc" } },
 } satisfies Prisma.OrderInclude;
 
 const detailInclude = {
@@ -67,41 +67,61 @@ async function nextOrderNumber(tx: Prisma.TransactionClient): Promise<string> {
   return `O-${(row?.max ?? 2000) + 1}`;
 }
 
-export type NewOrderInput = {
+export const MAX_ORDER_ITEMS = 20;
+
+export type NewOrderItemInput = {
   productSlug: string;
   colorSlug: string;
   placement: string;
   methodSlug: string;
   qty: number;
   sizes?: Prisma.InputJsonValue;
+};
+
+export type NewOrderInput = {
+  items: NewOrderItemInput[];
   isSample: boolean;
   dueDate: Date | null;
   deliveryAddress: string | null;
   comment: string | null;
 };
 
+/**
+ * Creates an order with one or more items. Every item is validated against
+ * the catalog; prices are computed here (never taken from the client) with the
+ * volume tier based on the order's total quantity.
+ */
 export async function createOrder(customer: { id: string; name: string; companyId: string }, input: NewOrderInput) {
-  const [company, product, method, tiers] = await Promise.all([
+  if (input.items.length === 0) throw new DomainError("Добавьте хотя бы одно изделие");
+  if (input.items.length > MAX_ORDER_ITEMS) throw new DomainError(`Не больше ${MAX_ORDER_ITEMS} позиций в одном заказе`);
+
+  const [company, products, methods, tiers] = await Promise.all([
     db.company.findUniqueOrThrow({ where: { id: customer.companyId } }),
-    db.product.findUnique({ where: { slug: input.productSlug } }),
-    db.decorationMethod.findUnique({ where: { slug: input.methodSlug } }),
+    db.product.findMany({ where: { slug: { in: input.items.map((i) => i.productSlug) }, isActive: true } }),
+    db.decorationMethod.findMany({ where: { slug: { in: input.items.map((i) => i.methodSlug) }, isActive: true } }),
     db.discountTier.findMany(),
   ]);
-  if (!product?.isActive) throw new DomainError("Изделие недоступно");
-  if (!method?.isActive) throw new DomainError("Способ нанесения недоступен");
-  if (!product.colors.includes(input.colorSlug)) throw new DomainError("Цвет недоступен для этого изделия");
-  if (!product.placements.includes(input.placement)) throw new DomainError("Место нанесения недоступно");
-  const qty = input.isSample ? 1 : input.qty;
-  if (!input.isSample && qty < product.minQty) throw new DomainError(`Минимальный тираж: ${product.minQty} шт`);
+  const productBySlug = new Map(products.map((p) => [p.slug, p]));
+  const methodBySlug = new Map(methods.map((m) => [m.slug, m]));
 
-  const price = priceLine({
-    basePrice: product.basePrice,
-    qty,
-    feePerUnit: method.feePerUnit,
-    setupFee: method.setupFee,
-    tiers,
-    companyDiscountPct: company.discountPct,
+  const lines = input.items.map((item, i) => {
+    const n = input.items.length > 1 ? ` (позиция ${i + 1})` : "";
+    const product = productBySlug.get(item.productSlug);
+    const method = methodBySlug.get(item.methodSlug);
+    if (!product) throw new DomainError(`Изделие недоступно${n}`);
+    if (!method) throw new DomainError(`Способ нанесения недоступен${n}`);
+    if (!product.colors.includes(item.colorSlug)) throw new DomainError(`${product.name}: цвет недоступен`);
+    if (!product.placements.includes(item.placement)) throw new DomainError(`${product.name}: место нанесения недоступно`);
+    const qty = input.isSample ? 1 : item.qty;
+    if (!input.isSample && qty < product.minQty) throw new DomainError(`${product.name}: минимальный тираж ${product.minQty} шт`);
+    return { item, product, method, qty };
   });
+
+  const priced = priceOrder(
+    lines.map((l) => ({ basePrice: l.product.basePrice, qty: l.qty, feePerUnit: l.method.feePerUnit, setupFee: l.method.setupFee })),
+    tiers,
+    company.discountPct,
+  );
   const actor: Actor = { type: "CUSTOMER", id: customer.id, name: customer.name };
 
   // Serializable so two simultaneous orders cannot take the same number.
@@ -116,18 +136,18 @@ export async function createOrder(customer: { id: string; name: string; companyI
           isSample: input.isSample,
           dueDate: input.dueDate,
           deliveryAddress: input.deliveryAddress,
-          netAmount: price.lineTotal,
+          netAmount: priced.net,
           vatPct: VAT_PCT,
           items: {
-            create: {
-              productId: product.id,
-              colorSlug: input.colorSlug,
-              placement: input.placement,
-              methodSlug: method.slug,
-              qty,
-              sizes: product.sized && !input.isSample ? input.sizes : undefined,
-              ...price,
-            },
+            create: lines.map((l, i) => ({
+              productId: l.product.id,
+              colorSlug: l.item.colorSlug,
+              placement: l.item.placement,
+              methodSlug: l.method.slug,
+              qty: l.qty,
+              sizes: l.product.sized && !input.isSample ? l.item.sizes : undefined,
+              ...priced.lines[i],
+            })),
           },
         },
       });

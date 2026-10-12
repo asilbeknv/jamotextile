@@ -13,12 +13,31 @@ async function customerActor() {
   return { actor: { type: "CUSTOMER" as const, id: u.id, name: u.name }, companyId: u.company.id };
 }
 
-const NewOrderSchema = z.object({
+const SizeRow = z.object(
+  Object.fromEntries(SIZES.map((s) => [s, z.number().int().min(0).max(100_000)])) as Record<(typeof SIZES)[number], z.ZodNumber>,
+);
+
+const ItemSchema = z.object({
   productSlug: z.string().min(1),
   colorSlug: z.string().min(1),
   placement: z.string().min(1),
   methodSlug: z.string().min(1),
-  qty: z.coerce.number().int().min(0).max(100_000),
+  qty: z.number().int().min(0).max(100_000),
+  sizes: z.object({ men: SizeRow, women: SizeRow }).nullable(),
+});
+
+const NewOrderSchema = z.object({
+  items: z
+    .string()
+    .transform((raw, ctx) => {
+      try {
+        return JSON.parse(raw) as unknown;
+      } catch {
+        ctx.addIssue({ code: "custom", message: "bad json" });
+        return z.NEVER;
+      }
+    })
+    .pipe(z.array(ItemSchema).min(1).max(orders.MAX_ORDER_ITEMS)),
   isSample: z.literal("on").optional(),
   dueDate: z
     .string()
@@ -26,27 +45,11 @@ const NewOrderSchema = z.object({
     .transform((v) => (v ? new Date(`${v}T00:00:00+05:00`) : null)),
   deliveryAddress: z.string().max(300).optional(),
   comment: z.string().max(2000).optional(),
-  sizes: z.string().optional(),
 });
 
-const SizeRow = z.object(Object.fromEntries(SIZES.map((s) => [s, z.number().int().min(0).max(100_000)])) as Record<
-  (typeof SIZES)[number],
-  z.ZodNumber
->);
-const SizesSchema = z.object({ men: SizeRow, women: SizeRow });
-
-/** Parses the size grid; the order quantity is always recomputed from it server-side. */
-function parseSizes(raw: string | undefined) {
-  if (!raw) return null;
-  try {
-    const parsed = SizesSchema.safeParse(JSON.parse(raw));
-    if (!parsed.success) return null;
-    const total = [...Object.values(parsed.data.men), ...Object.values(parsed.data.women)].reduce((a, b) => a + b, 0);
-    return { sizes: parsed.data, total };
-  } catch {
-    return null;
-  }
-}
+/** Quantity is always recomputed from the size grid when one is sent. */
+const itemQty = (i: z.infer<typeof ItemSchema>) =>
+  i.sizes ? [...Object.values(i.sizes.men), ...Object.values(i.sizes.women)].reduce((a, b) => a + b, 0) : i.qty;
 
 export type NewOrderState = { error?: string };
 
@@ -55,20 +58,20 @@ export async function createOrderAction(_: NewOrderState, form: FormData): Promi
   const parsed = NewOrderSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) return { error: "Проверьте поля формы" };
   const d = parsed.data;
-  const sizes = parseSizes(d.sizes);
-  if (d.sizes && !sizes) return { error: "Проверьте размерную сетку" };
 
   let number: string;
   try {
     const order = await orders.createOrder(
       { id: actor.id, name: actor.name, companyId },
       {
-        productSlug: d.productSlug,
-        colorSlug: d.colorSlug,
-        placement: d.placement,
-        methodSlug: d.methodSlug,
-        qty: sizes ? sizes.total : d.qty,
-        sizes: sizes?.sizes,
+        items: d.items.map((i) => ({
+          productSlug: i.productSlug,
+          colorSlug: i.colorSlug,
+          placement: i.placement,
+          methodSlug: i.methodSlug,
+          qty: itemQty(i),
+          sizes: i.sizes ?? undefined,
+        })),
         isSample: d.isSample === "on",
         dueDate: d.dueDate,
         deliveryAddress: d.deliveryAddress?.trim() || null,

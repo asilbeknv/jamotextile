@@ -1,2 +1,2 @@
 # jamotextile
-JAMO Textile loyihasi uchun
+JAMO Textile CRM loyihasi uchun
